@@ -1,0 +1,3 @@
+* Sebastian's dotfiles
+
+Emacs for now

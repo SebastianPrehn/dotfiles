@@ -1,0 +1,8 @@
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+### Emacs ###
+slp-identity.el
