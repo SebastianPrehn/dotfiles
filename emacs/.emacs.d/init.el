@@ -65,6 +65,7 @@
 (require 'dev-eglot) ;; Eglot
 (require 'dev-treesitter) ;; treesitter
 (require 'dev-python) ; python
+(require 'dev-latex)
 ;(require 'init-highlight) ;; highlights indentation
 ;(require 'init-rust) ;; rust (not working)
 
