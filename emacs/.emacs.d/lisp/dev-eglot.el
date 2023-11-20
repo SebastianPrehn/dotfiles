@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package eglot
+(use-package eglot :elpaca nil
   :bind (:map eglot-mode-map
 	      ("C-c d" . eldoc)
 	      ("C-c a" . eglot-code-actions)

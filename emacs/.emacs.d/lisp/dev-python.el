@@ -6,8 +6,7 @@
   :bind (:map python-ts-mode-map
 	      ("<f5>" . recompile)
 	      ("<f6>" . eglot-format))
-  :hook ((python-ts-mode . eglot-ensure)
-	 (python-ts-mode . company-mode))
+  :hook ((python-ts-mode . eglot-ensure))
   :mode (("\\.py\\'" . python-ts-mode)))
 
 (provide 'dev-python)
