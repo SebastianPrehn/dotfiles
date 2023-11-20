@@ -7,8 +7,12 @@
 
 (use-package marginalia
   :after vertico
+  :general
+  (:keymaps 'minibuffer-local-map
+            "M-A" 'marginalia-cycle)
   :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  (marginalia-max-relative-age 0)
+  (marginalia-align 'right)
   :init
   (marginalia-mode))
 

@@ -35,7 +35,7 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 
-(require 'slp-identity) ;; Identity file
+;(require 'slp-identity) ;; Identity file
 
 ;; Interface
 (require 'if-fonts)
@@ -54,19 +54,19 @@
 (require 'compl-vertico)
 (require 'compl-orderless)
 (require 'compl-marginalia)
+(require 'compl-corfu)
 
 ;; Programming
 (require 'dev-magit)
 (require 'dev-blamer)
 (require 'dev-diff-hl) ;; Highlight changed-and-uncommitted lines when programming
 (require 'dev-flycheck)
-
-;; Programming
-;(require 'init-company) ;; Company
-;(require 'init-eglot) ;; Eglot
+(require 'dev-projectile)
+(require 'dev-eglot) ;; Eglot
+(require 'dev-treesitter) ;; treesitter
+(require 'dev-python) ; python
 ;(require 'init-highlight) ;; highlights indentation
-;(require 'init-treesitter) ;; treesitter
-;(require 'init-rust) ;; rust
-;(require 'init-python) ; python
+;(require 'init-rust) ;; rust (not working)
+
 
 ;;; init.el ends here

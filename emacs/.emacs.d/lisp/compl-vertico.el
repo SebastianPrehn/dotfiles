@@ -8,12 +8,11 @@
 (use-package vertico
   :init
   (vertico-mode)
-
   ;; Different scroll margin
   ;; (setq vertico-scroll-margin 0)
 
-  ;; Show more candidates
-  ;; (setq vertico-count 20)
+  ;; Amount of candidates
+  (setq vertico-count 13)
 
   ;; Grow and shrink the Vertico minibuffer
   (setq vertico-resize t)
