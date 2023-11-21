@@ -66,8 +66,12 @@
 (require 'dev-treesitter) ;; treesitter
 (require 'dev-python) ; python
 (require 'dev-latex)
+(require 'dev-rst) ;; ReStructuredText support
+(require 'dev-undo-tree)
 ;(require 'init-highlight) ;; highlights indentation
 ;(require 'init-rust) ;; rust (not working)
 
+;; Org mode
+;(require 'slp-org)
 
 ;;; init.el ends here
