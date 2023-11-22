@@ -35,7 +35,6 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 
-;(require 'slp-identity) ;; Identity file
 
 ;; Interface
 (require 'if-fonts)
@@ -73,5 +72,9 @@
 
 ;; Org mode
 ;(require 'slp-org)
+
+(elpaca-wait)
+(require 'slp-identity) ;; Identity file
+(require 'slp-spellchecking) ;; Spell checking
 
 ;;; init.el ends here
