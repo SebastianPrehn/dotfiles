@@ -3,11 +3,13 @@
 ;;; Code:
 
 (use-package org :elpaca nil
-  :after python
   :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t))))
+  (setq org-ellipsis " ▼"
+        org-hide-emphasis-markers t
+        org-pretty-entities t))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
 
 (provide 'slp-org)
 ;;; slp-org.el ends here
