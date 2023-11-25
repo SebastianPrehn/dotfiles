@@ -66,6 +66,7 @@
 (require 'dev-python) ; python
 (require 'dev-latex)
 (require 'dev-rst) ;; ReStructuredText support
+(require 'dev-haskell)
 ; (require 'dev-undo-tree) 
 ;(require 'init-highlight) ;; highlights indentation
 ;(require 'init-rust) ;; rust (not working)
@@ -76,5 +77,5 @@
 (elpaca-wait)
 ;(require 'slp-identity) ;; Identity file
 (require 'slp-spellchecking) ;; Spell checking
-
+(require 'slp-dired) ;; Dired
 ;;; init.el ends here

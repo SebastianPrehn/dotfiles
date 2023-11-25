@@ -7,7 +7,12 @@
 	      ("C-c d" . eldoc)
 	      ("C-c a" . eglot-code-actions)
 	      ("C-c f" . flymake-show-buffer-diagnostics)
-	      ("C-c r" . eglot-rename)))
+	      ("C-c r" . eglot-rename))
+  :config
+  (add-hook 'haskell-mode-hook 'eglot-ensure)
+  :custom
+  (eglot-autoshutdown t)
+  (eglot-confirm-server-initiated-edits nil))
 
 (provide 'dev-eglot)
 ;;; dev-eglot.el ends here
