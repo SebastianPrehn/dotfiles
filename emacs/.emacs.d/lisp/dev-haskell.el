@@ -1,4 +1,4 @@
-;;; dev-eglot.el --- Configuration for Eglot -*- lexical-binding: t -*-
+;;; dev-haskell.el --- Configuration for Haskell -*- lexical-binding: t -*-
 ;;; Commentary:
 
 ;; http://h2.jaguarpaw.co.uk/posts/how-i-use-dante/

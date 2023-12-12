@@ -71,6 +71,7 @@
 (require 'dev-latex)
 (require 'dev-rst) ;; ReStructuredText support
 (require 'dev-haskell)
+(require 'dev-pdf-tools)
 ;(require 'init-highlight) ;; highlights indentation
 ;(require 'init-rust) ;; rust (not working)
 
