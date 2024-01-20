@@ -3,6 +3,8 @@
 
 ;;; Code:
 
+(use-package transient)
+
 (use-package magit
   :ensure-system-package git)
 
