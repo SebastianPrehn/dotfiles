@@ -72,6 +72,8 @@
 (require 'dev-rst) ;; ReStructuredText support
 (require 'dev-haskell)
 (require 'dev-pdf-tools)
+(require 'dev-nix)
+(require 'dev-copilot)
 ;(require 'init-highlight) ;; highlights indentation
 ;(require 'init-rust) ;; rust (not working)
 
