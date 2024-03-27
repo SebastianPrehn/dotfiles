@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package org :elpaca nil
+(use-package org :ensure nil
   :config
   (setq org-ellipsis " ▼"
         org-agenda-start-with-log-mode t

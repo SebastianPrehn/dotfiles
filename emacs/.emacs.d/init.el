@@ -75,7 +75,7 @@
 (require 'dev-nix)
 (require 'dev-copilot)
 ;(require 'init-highlight) ;; highlights indentation
-;(require 'init-rust) ;; rust (not working)
+(require 'dev-rust) ;; rust (not working)
 
 ;; Org mode
 (require 'slp-org)

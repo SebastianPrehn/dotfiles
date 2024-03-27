@@ -5,7 +5,7 @@
 
 ;;; Code:
 
-(use-package corfu :elpaca (:host github :repo "minad/corfu" :files (:defaults "extensions/*"))
+(use-package corfu :ensure (:host github :repo "minad/corfu" :files (:defaults "extensions/*"))
   :custom
   (corfu-auto t) ;; Enable auto-completion
   :bind

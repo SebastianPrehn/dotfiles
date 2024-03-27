@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package dired :elpaca nil
+(use-package dired :ensure nil
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
   :config

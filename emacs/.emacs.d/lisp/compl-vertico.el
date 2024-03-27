@@ -21,11 +21,11 @@
   (setq vertico-cycle t))
 
 ;; History persist over restarts
-(use-package savehist :elpaca nil
+(use-package savehist :ensure nil
   :init
   (savehist-mode))
 
-(use-package emacs :elpaca nil
+(use-package emacs :ensure nil
   :init
   ;; Add prompt indicator to `completing-read-multiple´
   ;; We display [CRM<seperator>] e.g. [CRM,] if the seperator is a comma.

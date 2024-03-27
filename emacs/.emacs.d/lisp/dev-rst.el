@@ -3,7 +3,7 @@
 
 ;;; Code:
 
-(use-package rst :elpaca nil
+(use-package rst :ensure nil
   :config
   (setq auto-mode-alist
         (append '(("\\.txt\\'" . rst-mode)

@@ -22,7 +22,7 @@
   (mapcar (lambda (mode) (intern (format "%s-hook" mode)))
           prose-modes))
 
-(use-package flyspell :elpaca nil
+(use-package flyspell :ensure nil
   :ensure-system-package ispell
   :config
   (setq ispell-personal-dictionary "~/.spell_words")
