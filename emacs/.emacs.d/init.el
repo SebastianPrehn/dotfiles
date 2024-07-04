@@ -76,6 +76,7 @@
 (require 'dev-copilot)
 ;(require 'init-highlight) ;; highlights indentation
 (require 'dev-rust) ;; rust (not working)
+(require 'dev-nodejs)
 
 ;; Org mode
 (require 'slp-org)
