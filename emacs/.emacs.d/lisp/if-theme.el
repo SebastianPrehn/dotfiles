@@ -19,9 +19,9 @@
   (doom-themes-org-config))
 
 
-(use-package nord-theme
+(use-package dracula-theme
   :config
-  (load-theme 'nord t))
+  (load-theme 'dracula t))
 
 (provide 'if-theme)
 ;;; if-theme.el ends here
