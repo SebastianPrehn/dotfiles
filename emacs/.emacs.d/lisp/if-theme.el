@@ -18,10 +18,10 @@
   ;; Corrects (and improves) Org-mode's native fontification
   (doom-themes-org-config))
 
-
-(use-package dracula-theme
+(use-package kaolin-themes
   :config
-  (load-theme 'dracula t))
+  (load-theme 'kaolin-dark t)
+  (kaolin-treemacs-theme))
 
 (provide 'if-theme)
 ;;; if-theme.el ends here

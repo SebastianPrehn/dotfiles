@@ -10,8 +10,6 @@
 ;; into other files as an attempt to make my configuration more "modular".
 
 ;; TODO make more packages deferred in order to speed up load and minimize mindless loading.
-;; Etc. will sadly not be using Haskell for work most likely, thus an easy to make sure only
-;; loads when not on work computer
 
 ;;; Code:
 
