@@ -111,6 +111,7 @@
 (require 'dev-lsp)
 (require 'dev-haskell)
 (require 'dev-latex)
+(require 'dev-markdown)
 
 ;; Org
 (require 'slp-org)
@@ -121,6 +122,7 @@
 (require 'slp-which-key)
 (require 'slp-helpful)
 (require 'slp-pdf)
+(require 'slp-elfeed)
 
 
 (provide 'init)
