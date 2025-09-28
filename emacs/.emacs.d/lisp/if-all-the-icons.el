@@ -14,11 +14,10 @@
 (use-package all-the-icons-completion
   :after all-the-icons
   :init
-  (all-the-icons-completion-mode)
-  ;; The following will make sure Marginalia and this works together
-  (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup))
+  (all-the-icons-completion-mode))
 
 (use-package all-the-icons-dired
+  :if (display-graphic-p)
   :hook
   (dired-mode . all-the-icons-dired-mode))
 

@@ -1,18 +1,13 @@
-;;; dev-flycheck.el --- Configure flycheck -*- lexical-binding: t -*-
-
+;;; dev-flycheck.el --- Setup flycheck -*- lexical-binding: t -*-
 ;;; Commentary:
-
-;; This file configures the Flycheck package which
-;; is a modern syntax checker.
-
-;; https://www.flycheck.org/en/latest/
-
 ;;; Code:
 
 (use-package flycheck
+  :defer t
+  :init (global-flycheck-mode)
   :config
-  (unbind-key "C-c !" flycheck-mode-map) ;; conflicts with org
-  (global-flycheck-mode))
+  (setq flycheck-display-errors-function #'ignore)
+  (unbind-key "C-c !" flycheck-mode-map)) ;; conflicts with org
 
 (provide 'dev-flycheck)
 ;;; dev-flycheck.el ends here

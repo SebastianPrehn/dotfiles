@@ -1,15 +1,16 @@
-;;; dev-latex.el --- Configuration for LaTeX -*- lexical-binding: t -*-
+;;; dev-latex.el --- Setup AUCTeX -*- lexical-binding: t -*-
 ;;; Commentary:
-
-;; https://github.com/progfolio/elpaca/issues/191
-
 ;;; Code:
 
 (use-package auctex
-  :ensure (auctex :pre-build (("./autogen.sh")
-                              ("./configure" "--without-texmf-dir" "--with-lispdir=.")
-                              ("make")))
-  :mode (("\\.tex\\'" . LaTeX-mode)))
+  :hook
+  (LaTeX-mode . turn-on-prettify-symbols-mode)
+  (LaTeX-mode . reftex-mode)
+  (LaTeX-mode . outline-minor-mode)
+  (LaTeX-mode . olivetti-mode))
+
+(setq reftex-toc-split-windows-horizontally t
+	  reftex-toc-split-windows-fraction     0.2)
 
 (provide 'dev-latex)
 ;;; dev-latex.el ends here

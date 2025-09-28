@@ -1,24 +1,17 @@
-;;; early-init.el --- Emacs 27+ pre-initialisation config
+;;; early-init.el --- Emacs 27+ pre-initialization config -*- lexical-binding: t -*-
 
 ;;; Commentary:
 
-;; Emacs 27+ loads this file before calling `package-initialize'.
-;; We use this file to supress that automatic behavior to use `elpaca.el'.
+;; Emacs 27+ loads this file before calling
+;; `package-initialize'. We use this file to supress that automatic
+;; behavior so that startup is consistent across Emacs versions.
 
 ;;; Code:
 
-(setq
- package-enable-at-startup nil
- site-run-file nil
- inhibit-default-init t)
+(setq package-enable-at-statup nil)
+(setenv "LSP_USE_PLISTS" "true")
 
-(setq native-comp-eln-load-path
-      (list (expand-file-name "eln-cache" user-emacs-directory)))
-
-;; Native Compilation
-(customize-set-variable 'native-comp-async-report-warnings-errors nil)
-
-;; Detect this having been loaded
+;; So we can detect this having been loaded
 (provide 'early-init)
 
 ;;; early-init.el ends here

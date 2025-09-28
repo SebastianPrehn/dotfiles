@@ -1,14 +1,15 @@
-;;; dev-projectile.el --- Use Projectile for navigation within projects -*- lexical-binding: t -*-
+;;; dev-projectile.el --- Setup Projectile -*- lexical-binding: t -*-
 ;;; Commentary:
 ;;; Code:
 
 (use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
+  :defer t
+  :bind (("C-c p" . projectile-command-map))
+  :config
+  (add-to-list 'projectile-project-search-path "~/Documents/University/")
+  (add-to-list 'projectile-project-search-path "~/Sandbox")
   :init
-  (setq projectile-switch-prject-action #'projectile-dired))
+  (projectile-mode))
 
 (provide 'dev-projectile)
 ;;; dev-projectile.el ends here

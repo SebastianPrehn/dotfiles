@@ -1,4 +1,4 @@
-;;; init.el --- Sebastian's config file -*- lexical-binding: t -*-
+;;; init.el --- Sebastian's personal GNU Emacs configuration -*- lexical-binding: t -*-
 ;; Author: Sebastian Larsen Prehn
 
 ;; First written in November 2023, to replace a literate configuration file as I grew
@@ -6,81 +6,122 @@
 
 ;;; Commentary:
 
-;; This file bootstraps my configuration, with much of the configuration divided out
-;; into other files as an attempt to make my configuration more "modular".
-
-;; TODO make more packages deferred in order to speed up load and minimize mindless loading.
+;; Bootstrap Emacs configuration. Most of the setup is split across
+;; files under `lisp/' for clarity and modularity.
 
 ;;; Code:
 
-;; Produce backtraces when errors occur: can be helpful to diagnose startup issues
-;; (setq debug-on-error t)
+;; Produce backtraces when errors occur; can be helpful to diagnose startup issues
+(defun slp/toggle-debug-on-error ()
+  "Toggle whether Emacs shows backtraces when errors occur."
+  (interactive)
+  (setq debug-on-error (not debug-on-error))
+  (message "Debug on error: %s" debug-on-error))
+(global-set-key (kbd "C-c d") #'slp/toggle-debug-on-error)
+
+
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(require 'init-benchmarking) ;; Measure startup time (taken from Purcell)
 
 (defconst *is-a-mac* (eq system-type 'darwin))
 
-;; Adjust garbage collection thresholds during startup, and thereafter
+;; Garbage collection
+;; https://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
 
-(let ((normal-gc-cons-threshold (* 20 1024 1024))
-      (init-gc-cons-threshold (* 128 1024 1024)))
-  (setq gc-cons-threshold init-gc-cons-threshold)
-  (add-hook 'emacs-startup-hook
-	    (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
+(defun slp-minibuffer-setup-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
 
+(defun slp-minibuffer-exit-hook ()
+  (setq gc-cons-threshold 800000))
+
+(add-hook 'minibuffer-setup-hook #'slp-minibuffer-setup-hook)
+(add-hook 'minibuffer-exit-hook #'slp-minibuffer-exit-hook)
 
 ;; Bootstrap config
-(require 'init-elpaca)
-(require 'init-startup)
-(require 'init-recovery) ;; Handles auto-save and backups
-
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
-
+(setq custom-file (locate-user-emacs-file "custom.el"))
+(require 'slp-package)
+(require 'slp-startup)
+(require 'slp-recovery)
+(require 'slp-terminal)
 
 ;; Interface
 (require 'if-fonts)
-(require 'if-all-the-icons)
-(require 'if-moody)
+(require 'if-modeline)
+(require 'if-program-visuals)
 (require 'if-theme)
-(require 'if-hl-todo)
+
+
+;; General editing
+(require 'ed-general)
+(require 'ed-multicursor)
 
 ;; Keymaps
-(require 'slp-osx-keys)
-(require 'slp-which-key)
-(use-package general :demand t)
-(elpaca-wait)
+(require 'kb-osx-keys)
+
 
 ;; Completion
-(require 'compl-vertico)
-(require 'compl-orderless)
-(require 'compl-marginalia)
-(require 'compl-corfu)
+(require 'cmp-vertico)
+(require 'cmp-corfu)
+(require 'cmp-orderless)
+(require 'cmp-imenu)
+(require 'cmp-marginalia)
+(require 'cmp-consult)
 
-;; Programming
-(require 'dev-magit)
-(require 'dev-blamer)
-(require 'dev-diff-hl) ;; Highlight changed-and-uncommitted lines when programming
+;; Version control
+(require 'vc-magit)
+
+;; Progrogramming
+
+;; LSP booster
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+
+
 (require 'dev-flycheck)
 (require 'dev-projectile)
-(require 'dev-eglot) ;; Eglot
-(require 'dev-treesitter) ;; treesitter
-(require 'dev-python) ; python
-(require 'dev-latex)
-(require 'dev-rst) ;; ReStructuredText support
+(require 'dev-lsp)
 (require 'dev-haskell)
-(require 'dev-pdf-tools)
-(require 'dev-nix)
-(require 'dev-copilot)
-;(require 'init-highlight) ;; highlights indentation
-(require 'dev-rust) ;; rust (not working)
-(require 'dev-nodejs)
+(require 'dev-latex)
 
-;; Org mode
+;; Org
 (require 'slp-org)
+(require 'og-roam)
 
-(elpaca-wait)
-(require 'slp-identity) ;; Identity file
-(require 'slp-spellchecking) ;; Spell checking
-(require 'slp-dired) ;; Dired
+
+;; Misc packages
+(require 'slp-which-key)
+(require 'slp-helpful)
+(require 'slp-pdf)
+
+
+(provide 'init)
 ;;; init.el ends here

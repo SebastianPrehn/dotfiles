@@ -1,4 +1,4 @@
-;;; init-osx-keys.el --- Configure keys specific to macOS -*- lexical-binding: t -*-
+;;; kb-osx-keys.el --- Configure keys specific to macOS -*- lexical-binding: t -*-
 ;;; Commentary:
 
 ;; macOS has some annoyances for Emacs.
@@ -16,5 +16,5 @@
 	mac-right-command-modifier 'super
 	mac-right-control-modifier 'hyper))
 
-(provide 'slp-osx-keys)
-;;; init-osx.keys.el ends here
+(provide 'kb-osx-keys)
+;;; kb-osx-keys.el ends here
