@@ -13,7 +13,9 @@
         "https://sigkill.dk/atom.xml"
         "https://xkcd.com/rss.xml"
         "https://danluu.com/atom.xml"
-        "https://drewdevault.com/blog/index.xml")))
+        "https://drewdevault.com/blog/index.xml"
+        "https://ogbe.net/blog-feed.xml"
+        "https://scripter.co/index.xml")))
 
 (provide 'slp-elfeed)
 ;;; slp-elfeed.el ends here
