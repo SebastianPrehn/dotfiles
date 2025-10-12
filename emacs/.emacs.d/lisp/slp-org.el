@@ -224,6 +224,10 @@
                                       display (space :align-to (- right ,(org-string-width (match-string 2)) 3)))    
                                prepend))) t)                                                                         
 
+(use-package ox-hugo
+  :ensure t
+  :pin MELPA
+  :after ox)
 
 (provide 'slp-org)
 ;;; slp-org.el ends here
