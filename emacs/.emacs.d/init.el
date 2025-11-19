@@ -112,6 +112,7 @@
 (require 'dev-haskell)
 (require 'dev-latex)
 (require 'dev-markdown)
+(require 'dev-futhark)
 
 ;; Org
 (require 'slp-org)
