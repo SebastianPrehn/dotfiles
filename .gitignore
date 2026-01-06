@@ -6,3 +6,12 @@
 
 ### Emacs ###
 slp-identity.el
+savehist
+auto-save-list
+eln-cache/
+elpa/
+history
+recentf
+forge-database.sqlite
+transient/
+tree-sitter/

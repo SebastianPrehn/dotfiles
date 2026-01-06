@@ -1,0 +1,32 @@
+;;; General org settings
+(setq org-directory (expand-file-name "~/Documents/org/"))
+(setq org-imenu-depth 7)
+
+(setq org-ellipsis " ▼")
+(setq org-special-ctrl-a/e nil)
+(setq org-special-ctrl-k nil)
+(setq org-M-RET-may-split-line '((default . nil)))
+(setq org-hide-emphasis-markers nil)
+(setq org-hide-macro-markers nil)
+(setq org-hide-leading-stars nil)
+(setq org-cycle-seperator-lines 0)
+(setq org-structure-template-alist
+      '(("s" . "src")
+	("e" . "src emacs-lisp")
+	("E" . "src emacs-lisp :results value code :lexical t")
+	("t" . "src emacs-lisp :tangle FILENAME")
+	("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
+	("x" . "example")
+	("X" . "export")
+	("q" . "quote")))
+(setq org-fold-catch-invisible-edits 'show)
+(setq org-return-follows-link nil)
+(setq org-loop-over-headlines-in-active-region 'start-level)
+(setq org-insert-heading-respect-content t)
+(setq org-read-date-prefer-future 'time)
+(setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
+(setq org-fontify-quote-and-verse-blocks t)
+(setq org-fontify-whole-block-delimiter-line t)
+(setq org-track-ordered-property-with-tag t)
+
+(provide 'slp-org)

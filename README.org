@@ -1,10 +1,13 @@
 #+TITLE: Sebastian's dotfiles
-#+SUBTITLE: Configuration files for Emacs and other software I use
 
 * About
 
 Primarily a repository for my GNU Emacs configuration, along with related software.
 
-My configuration is primarily built for my primary laptop, which is a MacBook Air M1. I also have a work laptop, a MacBook Air M2, as well as various smaller Linux machines for various tasks.
+My configuration is primarily built around my primary workstation, which is a PC using Arch Linux.
+I also have a laptop, MacBook Air M1, and a work laptop, MacBook Air M2, which also uses some of these configuration files.
 
-For my MacOS-related computers, I mainly use ~brew~ to manage their software, but I also rely on language-specific tools like ~GHCup~ and ~rustup~.
+For my Arch Linux computer, I use ~pacman~ to manage its software, along with language-specific tools like ~GHCup~ and ~rustup~.
+For my MacOS-related computers, I mainly use ~brew~ to manage their software, along with language-specific tools.
+
+ 

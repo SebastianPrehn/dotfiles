@@ -1,17 +1,33 @@
-;;; early-init.el --- Emacs 27+ pre-initialization config -*- lexical-binding: t -*-
+(setq frame-resize-pixelwise t
+      frame-inhibit-implied-resize 'force
+      frame-title-format '("%b")
+      ring-bell-function 'ignore
+      use-dialog-box t ; only for mouse events
+      use-file-dialog nil
+      use-short-answers t
+      inhibit-splash-screen t
+      inhibit-startup-screen t
+      inhibit-x-resources t
+      inhibit-startup-buffer-menu t)
 
-;;; Commentary:
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
 
-;; Emacs 27+ loads this file before calling
-;; `package-initialize'. We use this file to supress that automatic
-;; behavior so that startup is consistent across Emacs versions.
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.5)
 
-;;; Code:
+(defvar slp-emacs--file-name-handler-alist file-name-handler-alist)
+(defvar slp-emacs--vc-handled-backends vc-handled-backends)
 
-(setq package-enable-at-statup nil)
-(setenv "LSP_USE_PLISTS" "true")
+(setq file-name-handler-alist nil
+      vc-handled-backends nil)
 
-;; So we can detect this having been loaded
-(provide 'early-init)
+(add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (setq gc-cons-threshold (* 100 100 8)
+		  gc-cons-percentage 0.1
+		  file-name-handler-alist slp-emacs--file-name-handler-alist
+		  vc-handled-backends slp-emacs--vc-handled-backends)))
 
-;;; early-init.el ends here
+(setq package-enable-at-startup t)

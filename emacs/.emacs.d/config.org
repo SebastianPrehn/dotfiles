@@ -1,0 +1,1100 @@
+#+title: GNU Emacs configuration
+#+author: Sebastian Larsen Prehn
+#+language: en
+#+options: ':t toc:nil author:t email:nil num:t
+#+property: header-args :results none
+#+startup: content indent
+#+macro: latest-export-date (eval (format-time-string "%F %T %z"))
+
+*Last revised and exported on {{{latest-export-date}}}.*
+
+* Introduction
+:PROPERTIES:
+:CUSTOM_ID: introduction
+:END:
+
+
+This is a GNU Emacs [[https://orgmode.org/][Org]] literate configuration file: a file intended to produce a working configuration by tangling Emacs Lisp code into, among other files, ~early-init.el~ and ~init.el~ using =Org-babel=.
+
+The main purpose of this configuration file is to explain the choices I have made as clearly as possible.
+This serves both to make sharing knowledge with others easier, and for my own sake,
+as I have a tendency to forget the meaning or purpose of undocumented decisions.
+It is also meant to be the one configuration file that I touch, and then I let changes made here tangle out to my =.el= files by running =C-c C-v C-t= instead of modifying each Emacs Lisp file itself.
+
+This present configuration was first written in late 2025, after I had been using a more modular setup.
+The modular setup had itself replaced an earlier literate configuration, which had accumulated many legacy hacks that were no longer necessary in modern Emacs, eventually making it difficult to tell what was safe to remove and what was not.
+While I do not expect this configuration to be entirely free of such hacks, it is something I now actively try to avoid.
+I will also try to force myself to actually version control it more actively, as I eventually stopped pushing as I always only modified a few lines at a time, losing the picture of what had brought weird behavior, and what had been there for a long time.
+
+The following is written with GNU Emacs 30.2 in mind and has not been tested against other versions.
+
+There is still room for improvement in this configuration, and I welcome any and all advice people would send my way.
+
+The file is version-controlled via Git, and hosted on GitHub:
+- GitHub: https://github.com/SebastianPrehn/dotfiles/tree/main/emacs/.emacs.d
+
+** Acknowledgments
+
+The Emacs community has a rich body of shared knowledge.
+Throughout this configuration, I try to note when I am directly copying from, or drawing inspiration from, others.
+
+
+I returned to a literate configuration after being inspired by Protesilaos Stavrou's [[https://protesilaos.com/codelog/2025-01-26-emacs-organise-init/][video about organising the init file]], in which he advocates maintaining a single, well-structured literate source that is later tangled into multiple files, combining the advantages of both approaches. Beyond this, his writing and teaching have been a consistent source of insight, both on Emacs and on broader questions of software, philosophy, and intentional practice. [[https://protesilaos.com/][Protesilaos Stavrou]]'s work is well worth engaging with for anyone interested in Emacs as a long-term tool.
+
+[[https://github.com/minad/][Daniel Mendler]] is the author of many of the packages I rely on daily. His work appears frequently in my configuration, and his design sensibilities have strongly influenced how I think about Emacs Lisp myself.
+
+[[https://sophiebos.io/][Sophie Bosio]] is someone whose configuration I often check when looking for small, thoughtful refinements, particularly given her preference for functional languages.
+
+[[https://github.com/purcell][Steve Purcell]]'s Emacs configuration is one of the most frequently cited examples of a well-structured setup, and for good reason. I return to it periodically for ideas and patterns to copy.
+
+[[https://github.com/rougier][Nicolas P. Rougier]] has produced some of my favorite visual and typographic refinements to Org mode, is a prolific writer and researcher, and his GitHub is a treasure trove of information.
+
+Finally, [[https://sachachua.com/blog/][Sacha Chua]] was instrumental in getting me into Emacs in the first place. Her interviews, Emacs News, and her many blog posts have long served as an accessible way to learn about new packages and to stay connected to what is happening within the Emacs community.
+
+#+toc: headlines 4
+
+* early-init.el configuration
+:PROPERTIES:
+:CUSTOM_ID: early-init.el
+:END:
+
+When Emacs is started, it will normally attempt to load an /init file/, which is either a file named ~.~ or ~.emacs.el~ in the home directory of the user running the program, or a file named ~init.el~ in a sub-directory named ~.emacs.d~ in the home directory.
+Emacs also attempt to load a second init file, called the /early init file/, if it exists.
+This is called ~early-init.el~ in the ~.emacs.d~ directory, and the difference is that the early init file is loaded much earlier during the startup process.
+This enables us to customize some things that are initialized before loading the regular init file, such as variables that affect the package initialization process.
+
+** General settings for =early-init.el=
+
+Below are some general settings for frames and basics for the toolkit, which I have shamelessly copied from [[https://protesilaos.com/emacs/dotemacs][Protesilaos' configuration]], as I thought each of these made sense.
+
+#+begin_src emacs-lisp :tangle "early-init.el"
+  (setq frame-resize-pixelwise t
+        frame-inhibit-implied-resize 'force
+        frame-title-format '("%b")
+        ring-bell-function 'ignore
+        use-dialog-box t ; only for mouse events
+        use-file-dialog nil
+        use-short-answers t
+        inhibit-splash-screen t
+        inhibit-startup-screen t
+        inhibit-x-resources t
+        inhibit-startup-buffer-menu t)
+#+end_src
+
+The default menu bar, tool bar and scroll bar in order to have a more minimal initial window.
+
+#+begin_src emacs-lisp :tangle "early-init.el"
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+
+** Garbage collection and tweaks to startup time
+
+When it comes to garbage collection in Emacs, many a young Emacs users simply copy from their seniors.
+Since I started my Emacs journey back in 2019, that'd make me one of them. Benefit of an older editor.
+I thus copy [[https://protesilaos.com/emacs/dotemacs#h:50d28f3c-3ada-4db5-b830-bbbbee7fec4e][Protesilaos]] once again.
+
+As he himself notes, maximizing the threshold during startup seems to make Emacs boot a bit faster, which makes sense since it will have to call garbage collection fewer times.
+
+We arrange for the relevant values to be set very high during startup, and then brought down to something practical once Emacs is done loading.
+We also tweak ~file-name-handler-alist~ and ~vc-handled-backends~ to increase startup speed.
+
+#+begin_src emacs-lisp :tangle "early-init.el"
+  (setq gc-cons-threshold most-positive-fixnum
+        gc-cons-percentage 0.5)
+
+  (defvar slp-emacs--file-name-handler-alist file-name-handler-alist)
+  (defvar slp-emacs--vc-handled-backends vc-handled-backends)
+
+  (setq file-name-handler-alist nil
+        vc-handled-backends nil)
+
+  (add-hook 'emacs-startup-hook
+  	  (lambda ()
+  	    (setq gc-cons-threshold (* 100 100 8)
+  		  gc-cons-percentage 0.1
+  		  file-name-handler-alist slp-emacs--file-name-handler-alist
+  		  vc-handled-backends slp-emacs--vc-handled-backends)))
+#+end_src
+
+** Package cache
+
+I use =package.el= to handle Emacs packages. I have used [[https://github.com/radian-software/straight.el][straight.el]] and [[https://github.com/progfolio/elpaca][elpaca]] in the past, and while they're marvelous tools, they're overkill for what I need my package manager to do at the moment.
+I used to use them for their capabilities to install git packages independently of ELPA, MELPA and other package repositories, but ~use-package~ now has ~:vc~ built-in, which handles exactly that requirement should I need it again.
+
+Here, I found a nice detail mentioned by [[https://tony-zorman.com/posts/use-package-vc.html][Tony Zorman]] about the fact that by default, ~:vc~ installs the latest /release/ of a package, whereas I would often like to install the most recent version based on commit instead.
+To do this, ~:rev~ can be used with the ~:newest~ argument. An example taken from Zorman below:
+
+#+begin_src emacs-lisp :tangle no
+  (use-package vertico
+    :vc (:url "https://github.com/minad/vertico"
+         :rev :newest
+         :lisp-dir "extensions/"))
+#+end_src
+
+I initialize the installed packages in this ~early-init.el~ file by using the available cache. This leads to faster startup times after the initial loading of a file.
+
+#+begin_src emacs-lisp :tangle "early-init.el"
+  (setq package-enable-at-startup t)
+#+end_src
+
+
+* init.el configuration
+:PROPERTIES:
+:CUSTOM_ID: init.el
+:END:
+
+The ~init.el~ file is responsible for the remainder of the setup: Setup of the package manager, module loading, and a handful of defaults intended to bring Emacs' behavior in line with more modern usage expectations.
+
+** Setup package manager
+
+Setting up ~package.el~ is straightforward: given that ~package-enable-at-startup~ was set to ~t~ in the /early init file/, we do not need to require it or initialize it here.
+Instead, we add /MELPA/ as an additional package archive to ELPA.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  ;;; Setup package manager archives
+  (add-to-list 'package-archives
+               '("melpa" . "https://melpa.org/packages/") t)
+#+end_src
+
+** Load modules
+
+Here, the configuration establishes a list of inputs, currently just the =modules= directory, for all user-defined code.
+These inputs are added to the ~load-path~ early during startup, keeping the top-level ~init.el~ focused on coordination while moving package customization into self-contained Emacs Lisp files.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (dolist (dir '("modules"))
+    (let ((path (locate-user-emacs-file dir)))
+      (when (file-directory-p path)
+        (add-to-list 'load-path path))))
+#+end_src
+
+Once the =modules= directory is available, the desired modules are listed explicitly below. Enabling or disabling functionality is thus handled by this list, rather than needing to change the =Babel= source.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (require 'slp-completion)
+  (require 'slp-org)
+  (require 'slp-interface)
+  (require 'slp-programming)
+  (require 'slp-dired)
+  (require 'slp-spellcheck)
+  (require 'slp-vc)
+#+end_src
+
+** Defaults
+
+This section establishes a small set of general assumptions about how Emacs should behave when faced with common choices.
+
+By default, indentation should use spaces rather than tabs, unless a major mode or file explicitly specifies otherwise.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
+UTF-8 is explicitly configured as the preferred encoding throughout, even where it would already be the default.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (set-default-coding-systems 'utf-8)
+  (prefer-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+#+end_src
+
+For spell-checking and general explicitness, we set the standard language environment as English.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (set-language-environment "English")
+#+end_src
+
+Finally, the column number is displayed to aid precision when referring to locations in a buffer.
+Window decorations are disabled, and dialog boxes are handled within Emacs rather than via the system GUI.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (setq column-number-mode 1)
+  (setq use-dialog-box nil)
+  (setq frame-resize-pixelwise t)
+  (setq default-frame-alist '((undecorated . t)))
+#+end_src
+
+*** Make Emacs use the $PATH
+
+By default, Emacs will not always be able to find all the programs that exist in your ~$PATH~.
+Luckily, Steve Purcell has made a package which neatly solves this problem with the =exec-path-from-shell= package.
+
+Furthermore, we make it so that ~$MANPATH~, ~$PATH~ and ~exec-path~ is set from the shell, but only when executed in a GUI frame on OS X and Linux.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    ((dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"))
+    (add-to-list 'exec-path-from-shell-variables var))))
+  
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+#+end_src
+
+*** Emacs legacy oddities
+
+Emacs prioritizes portability and long-standing behavior, which can result in defaults that feel surprising on modern systems.
+Since this configuration targets contemporary environments exclusively, a small number of options are adjusted to better match current user expectations.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (delete-selection-mode 1) ; Delete selection when typing
+  (global-auto-revert-mode 1) ; Auto update buffer when file changes outside of Emacs (vc etc.)
+  (setq vc-follow-symlinks t) ; Follow symlinks without prompting
+  (setq-default tab-width 4) ; Reasonable default tab width most languages will override
+  (setq yes-or-no-p #'y-or-n-p) ; Use y/n instead of yes/no
+#+end_src
+
+*** Backup files and lock-files
+
+Emacs tries to lock down files so that they are not modified by other programs by default and keeps backups.
+Since anything I work with is under version control, I do not need Emacs to keep backups, as this behavior more often hinders my workflow than it helps.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (setq make-backup-files nil)
+  (setq create-lockfiles nil)
+#+end_src
+
+*** Custom files
+
+Emacs has a graphical interface for modifying variables that are intended for user configuration which can be used instead of writing Emacs Lisp code.
+While I rarely use this interface, any changes made through it are redirected to a separate ~custom.el~ file, which is loaded explicitly.
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (setq custom-file (locate-user-emacs-file "custom.el"))
+  (load custom-file :no-error-if-file-is-missing)
+#+end_src
+
+* Modules
+
+** Interface
+
+*** Fonts
+
+**** Icon fonts
+
+The following will setup complementary icons (the popular [[https://www.nerdfonts.com/][nerd-icons]]) for some of the packages used in this configuration.
+
+After initial startup of Emacs, the command ~nerd-icons-install-fonts~ must be called via ~M-x~.
+
+#+begin_src emacs-lisp :tangle "modules/slp-interface.el"
+  (use-package nerd-icons
+    :ensure t)
+
+  (use-package nerd-icons-completion
+    :ensure t
+    :after marginalia
+    :config
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+  (use-package nerd-icons-corfu
+    :ensure t
+    :after corfu
+    :config
+    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+  (use-package nerd-icons-dired
+    :ensure t
+    :hook
+    (dired-mode . nerd-icons-dired-mode))
+
+  (use-package nerd-icons-ibuffer
+    :ensure t
+    :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+#+end_src
+
+*** Modeline
+
+While maintaining my own configuration, I occasionally borrow ideas from Doom Emacs, which provides a number of well-integrated features.
+Its modeline is one such feature, and I use it here for its simplicity and polished appearance.
+
+#+begin_src emacs-lisp :tangle "modules/slp-interface.el"
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1)
+    :custom
+    (doom-modeline-project-detection 'auto)
+    (doom-modeline-icon t)
+    (doom-modeline-major-mode-icon t)
+    (doom-modeline-major-mode-color-icon t)
+    (doom-modeline-buffer-modification-icon t)
+    (doom-modeline-lsp-icon t)
+    (doom-modeline-time-icon t))
+#+end_src
+
+*** Themes
+
+Choosing a theme is one of the more subjective aspects of an Emacs configuration, but it has a tangible impact on readability and long-term comfort.
+
+I use the [[https://github.com/ogdenwebb/emacs-kaolin-themes][kaolin-themes]] package, which I think strikes a good balance between expressiveness and readability.
+
+A small number of theme options are enabled to improve visual clarity, and to better distinguish between different types of lines.
+
+#+begin_src emacs-lisp :tangle "modules/slp-interface.el"
+  (use-package kaolin-themes
+    :ensure t
+    :custom
+    (kaolin-themes-italic-comments t)
+    (kaolin-themes-hl-line-colored t)
+    (kaolin-themes-distinct-fringe t)
+    (kaolin-themes-git-gutter-solid t)
+    :config
+    (load-theme 'kaolin-dark t))
+#+end_src
+
+*** Provide interface
+
+#+begin_src emacs-lisp :tangle "modules/slp-interface.el"
+  (provide 'slp-interface)
+#+end_src
+
+** Completion
+
+this section configures the completion system used throughout Emacs.
+The setup follows the modern, modular approach centered around the built-in completion framework, with small, focused packages responsible for presentation, matching, annotations, and actions.
+
+*** Vertico
+
+The =vertico= package provides a minimal, vertical completion UI for the minibuffer.
+Rather than replacing Emacs' completion system, it focuses solely on presenting candidates in a clear, efficient layout.
+
+=vertico= is intentionally small and performs well out of the box, while still allowing fine-grained control of its behavior.
+Here, cycling is enabled to allow wrapping around the candidate list, while automatic resizing is disabled to keep the minibuffer height stable.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el" :mkdirp yes
+  ;;; Vertico
+  (use-package vertico
+    :ensure t
+    :config
+    (setq vertico-cycle t)
+    (setq vertico-resize nil)
+    (vertico-mode 1))
+#+end_src
+
+*** Marginalia
+
+The =marginalia= package adds contextual annotations to minibuffer completion candidates.
+These annotations adapt to the type of candidate being displayed, such as files, buffers, or commands, and provide useful metadata alongside the main completion text.
+
+This additional context reduces ambiguity and makes it easier to select the correct candidate.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package marginalia
+    :ensure t
+    :config
+    (marginalia-mode 1))
+#+end_src
+
+*** Orderless
+
+The =orderless= package enables out-of-order pattern matching in the minibuffer.
+Completion input is split on spaces and matched against candidates in any order, using either literal substrings or regular expressions.
+
+For example, typing "ins pac" will match both ~package-install~ and ~package-menu-mark-install~, without requiring precise recall of the command name.
+This significantly reduces the cognitive load of remembering exact identifiers.
+
+Emacs supports multiple completion styles, and =orderless= is configured here as the primary one, with a small exception for file completion where partial completion remains more convenient.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles partial-completion))))
+    (completion-category-defaults nil)
+    (orderless-ignore-case t))
+#+end_src
+
+*** Consult
+
+The =consult= package provides enhanced variants of many built-in Emacs commands, all integrated with the minibuffer completion system.
+A particularly useful feature is its live preview mechanism, which displays contextual information about the currently selected candidate in another window.
+
+The following key bindings enable a selection of commands I use frequently for searching buffers, files and outlines.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package consult
+    :ensure t
+    :bind (;; A recursive grep
+  	 ("M-s M-g" . consult-grep)
+  	 ;; Search for files names recursively
+  	 ("M-s M-f" . consult-find)
+  	 ;; Search through the outline (headings) of the file
+  	 ("M-s M-o" . consult-outline)
+       ;; Search through the imenu entries
+       ("M-g i" . consult-imenu)
+  	 ;; Search the current buffer
+  	 ("C-s" . consult-line) ; overrides I-search. TODO check back with this in a month 2026/01/03
+       ;; Search backward
+       ("C-r" . consult-line-backward)
+  	 ;; Switch to another buffer, or bookmarked file, or recently opened file
+  	 ("C-x b" . consult-buffer))) ; replaces default switch-to-buffer
+#+end_src
+
+*** Embark
+
+The =embark= package lets you target the thing or context at point and select an action to perform on it.
+The ~embark-act~ command can be seen as a keyboard-based version of a right-click contextual menu.
+It acts as a prefix for a keymap offering relevant actions to use on a target determined by the context presented in a minibuffer.
+
+When inside the minibuffer, =embark= can collect/export the contents to a fully fledged Emacs buffer.
+The ~embark-collect~ command retains the original behavior of the minibuffer, meaning that if you navigate over the candidate at hit /RET/, it will do what the minibuffer would have done.
+In contrast, the ~embark-export~ command reads the metadata to figure out what category this is and places them in a buffer whose major mode is specialized for that type of content.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package embark
+    :ensure t
+    :bind (("C-." . embark-act)
+  	 :map minibuffer-local-map
+  	 ("C-c C-c" . embark-collect)
+  	 ("C-c C-e" . embark-export)))
+#+end_src
+
+**** Embark-consult
+[[https://elpa.gnu.org/packages/embark-consult.html][Documentation]]
+
+The =embark-consult= package adds support for exporting a list of grep results via =consult= when using =embark=.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package embark-consult
+    :after embark consult
+    :ensure t)
+#+end_src
+
+*** wgrep
+
+The =wgrep= package allows grep results to be edited directly from a =grep-mode= buffer.
+After toggling writable mode, changes can be applied in place and committed or aborted using ~C-c C-c~ or ~C-c C-k~.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package wgrep
+    :ensure t
+    :bind ( :map grep-mode-map
+  	  ("e" . wgrep-change-to-wgrep-mode)
+  	  ("C-x C-q" . wgrep-change-to-wgrep-mode)
+  	  ("C-c C-c" . wgrep-finish-edit)))
+#+end_src
+
+*** Save history and recently visited files
+
+The built-in =savehist-mode= saves minibuffer histories.
+The built-in =recentf-mode= keeps track of recently visited files.
+Vertico can use this information to put recently selected options at the top simply by enabling
+these built-in options.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  ;;; `savehist' (minibuffer and related histories)
+  (setq savehist-file (locate-user-emacs-file "savehist"))
+  (setq history-length 100)
+  (setq history-delete-duplicates t)
+  (setq savehist-save-minibuffer-history t)
+  (with-eval-after-load 'savehist
+    (add-to-list 'savehist-additional-variables 'kill-ring))
+  (savehist-mode 1)
+#+end_src
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (recentf-mode 1)
+#+end_src
+
+*** Corfu
+
+The [[https://github.com/minad/corfu][corfu]] package provides a lightweight popup interface for in-buffer completion.
+It uses the same completion infrastructure as the minibuffer, but is designed for interactive code and text completion.
+
+Only the core functionality is configured here, with additional language-specific support provided in the Programming subsection.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package corfu
+    :ensure t
+    :custom
+    (corfu-cycle t)
+    (corfu-auto t) ;; Enable auto completion
+    :init
+    (global-corfu-mode))
+#+end_src
+
+Following the =corfu= example configuration, we set up a few extra useful configurations.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package emacs
+    :custom
+    ;; TAB cycle if there are only few candidates
+    (completion-cycle-threshold 4)
+    ;; Enable indentation+completion using the TAB key
+    (tab-always-indent 'complete)
+    ;; Disable Ispell completion function to try cape-dict instead as an alternative
+    (text-mode-ispell-word-completion nil)
+    ;; Hide commands in M-x which do not apply to the current mode. This is not a corfu feature, but rather just a tip from Minad
+    (read-extended-command-predicate #'command-completion-default-include-p))
+#+end_src
+
+*** cape
+
+[[https://github.com/minad/cape][cape]] provides /Completion At Point Extensions/ which can be used in combination with Corfu, and can utilize Company as well.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package cape
+    :ensure t
+    ;; Bind prefix keymap providing all Cape commands under one key. Press C-c p ? for help
+    :bind ("C-c p" . cape-prefix-map)
+    :init
+    (add-hook 'completion-at-point-functions #'cape-dabbrev)
+    (add-hook 'completion-at-point-functions #'cape-file)
+    (add-hook 'completion-at-point-functions #'cape-dict)
+    (add-hook 'completion-at-point-functions #'cape-elisp-block))
+#+end_src
+
+**** Company adapter
+
+Cape provides the adapter ~cape-company-to-capf~ for Company backends.
+The adapter transforms Company backends to Capfs which are understood by the built-in Emacs completion mechanism.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  ;; Use Company backends as Capfs
+  (when (require 'cape nil 'noerror)
+    (setq-local completion-at-point-functions
+                (mapcar #'cape-company-to-capf
+                        (list #'company-files #'company-keywords #'company-dabbrev))))
+#+end_src
+
+*** which-key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] is a minor mode for Emacs that displays key bindings based on already entered incomplete commands in a popup.
+It is very useful for especially longer key sequences.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package which-key
+    :ensure t
+    :config
+    (which-key-mode))
+#+end_src
+
+*** IBuffer
+
+=IBuffer= is a built-in package which can group buffers and display them neatly.
+
+This configuration is heavily inspired by, and adapted from, the setup described by [[https://olddeuteronomy.github.io/post/emacs-ibuffer-config/][The Emacs Cat]].
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package ibuffer
+    :ensure nil
+    :bind
+    ("C-x C-b" . ibuffer)
+    :custom
+    (ibuffer-expert nil) ; set to t once I've gotten used to IBuffer
+    (ibuffer-display-summary nil)
+    (ibuffer-use-other-window nil)
+    (ibuffer-show-empty-filter-groups nil)
+    (ibuffer-default-sorting-mode 'filename/process)
+    (ibuffer-title-face 'font-lock-doc-face)
+    (ibuffer-use-header-line t)
+    (ibuffer-default-hrink-to-minimum-size nil)
+    ;; IBuffer formats
+    (ibuffer-formats
+     '((mark modified read-only locked " "
+             (name 30 30 :left :elide)
+             " "
+             (size 9 -1 :right)
+             " "
+             (mode 16 16 :left :elide)
+             " " filename-and-process)
+       (mark " "
+             (name 16 -1)
+             " " filename)))
+    ;; Saved filter groups
+    (ibuffer-saved-filter-groups
+     '(("Main"
+        ("Directories" (mode . dired-mode))
+        ("Python" (or
+                   (mode . python-ts-mode)
+                   (mode . python-mode)))
+        ("Build" (or
+                  (mode . make-mode)
+                  (mode . makefile-gmake-mode)
+                  (name . "^Makefile$")
+                  (mode . change-log-mode)))
+        ("Scripts" (or
+                    (mode . shell-script-mode)
+                    (mode . shell-mode)
+                    (mode . sh-mode)
+                    (mode . lua-mode)
+                    (mode . bat-mode)))
+        ("Config" (or
+                   (mode . conf-mode)
+                   (mode . conf-toml-mode)
+                   (mode . toml-ts-mode)
+                   (mode . conf-windows-mode)
+                   (name . "^\\.clangd$")
+                   (name . "^config\\.toml$")
+                   (mode . yaml-mode)))
+        ("Web" (or
+                (mode . mhtml-mode)
+                (mode . html-mode)
+                (mode . web-mode)
+                (mode . nxml-mode)))
+        ("CSS" (or
+                (mode . css-mode)
+                (mode . sass-mode)))
+        ("JS" (or
+               (mode . js-mode)
+               (mode . rjsx-mode)))
+        ("Markup" (or
+                   (mode . markdown-mode)
+                   (mode . adoc-mode)))
+        ("Org" (mode . org-mode))
+        ("LaTeX" (name . "\\.tex$"))
+        ("Magit" (or
+                (mode . magit-blame-mode)
+                (mode . magit-cherry-mode)
+                (mode . magit-diff-mode)
+                (mode . magit-log-mode)
+                (mode . magit-process-mode)
+                (mode . magit-status-mode)))
+      ("Apps" (or
+               (mode . elfeed-search-mode)
+               (mode . elfeed-show-mode)))
+      ("Fundamental" (or
+                      (mode . fundamental-mode)
+                      (mode . text-mode)))
+      ("Emacs" (or
+                (mode . emacs-lisp-mode)
+                (name . "^\\*Help\\*$")
+                (name . "^\\*Custom.*")
+                (name . "^\\*Org Agenda\\*$")
+                (name . "^\\*info\\*$")
+                (name . "^\\*scratch\\*$")
+                (name . "^\\*Backtrace\\*$")
+                (name . "^\\*Messages\\*$"))))))
+  :hook
+  (ibuffer-mode . (lambda ()
+                    (ibuffer-switch-to-saved-filter-groups "Main"))))
+#+end_src
+
+*** Tempel
+
+[[https://github.com/minad/tempel][Tempel]] is a template package for Emacs, which uses the syntax of the Emacs Tempo library.
+=Tempel= takes advantage of the standard ~completion-at-point-functions~ and works well with the rest of Minad's packages.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  ;;; Configure Tempel
+  (use-package tempel
+    :ensure t
+    :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+           ("M-*" . tempel-insert))
+    :init
+    ;; Setup completion at point
+    (defun tempel-setup-capf ()
+      ;; Add the Tempel Capf to `completion-at-point-functions'.
+      ;; only triggers on exact matches. We add `tempel-expand' before the
+      ;; main programming mode Capf, such that it will be tried first.
+      (setq-local completion-at-point-functions
+                  (cons #'tempel-expand completion-at-point-functions)))
+    (add-hook 'conf-mode-hook 'tempel-setup-capf)
+    (add-hook 'prog-mode-hook 'tempel-setup-capf)
+    (add-hook 'text-mode-hook 'tempel-setup-capf))
+#+end_src
+
+**** Tempel collection
+
+=Tempel= also has a user-repository of ready-made templates for Tempel, which can be found in the package =tempel-collection=.
+We add that here.
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (use-package tempel-collection
+    :ensure t
+    :after tempel)
+#+end_src
+
+*** Provide completion
+
+#+begin_src emacs-lisp :tangle "modules/slp-completion.el"
+  (provide 'slp-completion)
+#+end_src
+
+
+** Programming
+
+This section configures Emacs for programming languages I use.
+It relies on tree-sitter modes for modern syntax parsing where available, and uses Eglot as the Language Server Protocol client.
+
+*** Language Server Protocol (LSP)
+
+Although I have previously used [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]], I chose Eglot for this configuration.
+
+[[https://github.com/joaotavora/eglot][Eglot]] is built into Emacs and provides a lightweight, standards-compliant Language Server Protocol client.
+The guiding principle is to prefer built-in ~*-ts-mode~whenever possible and to use hooks to automatically integrate LSP functionality with major modes.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  ;;; Eglot
+  (use-package eglot
+    :ensure nil) ;; built-in
+#+end_src
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (setq treesit-language-source-alist
+        '((rust "https://github.com/tree-sitter/tree-sitter-rust")
+          (zig "https://github.com/tree-sitter/zig-tree-sitter")
+          (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx")
+          (markdown "https://github.com/tree-sitter-grammars/tree-sitter-markdown")))
+#+end_src
+
+We can install these grammars with:
+
+#+begin_example
+M-x treesit-install-language-grammar
+#+end_example
+
+**** Prefer tree-sitter modes when available
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  ;;; Prefer tree-sitter modes when available
+  (setq major-mode-remap-alist
+        '((rust-mode . rust-ts-mode)
+          (zig-mode . zig-ts-mode)
+          (typescript-mode . typescript-ts-mode)
+          (js-mode . js-ts-mode)
+          (markdown-mode . markdown-ts-mode)))
+#+end_src
+
+*** Language support
+
+**** Markdown
+
+Markdown is a lightweight markup language for creating formatted text.
+It has evolved since its creation in 2004 into several variants, each with minor syntactic differences.
+This configuration uses [[https://jblevins.org/projects/markdown-mode/][markdown-mode]] for editing, and [[https://pandoc.org/][Pandoc]] as the processor.
+
+Keybindings are grouped by prefixes based on their function.
+List all keybindings by pressing ~C-c C-h~.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (use-package markdown-mode
+    :ensure t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init
+    (setq markdown-command "pandoc")
+    :bind (:map markdown-mode-map
+                ("C-c C-e" . markdown-do))
+    :config
+    (setq markdown-fontify-code-blocks-natively t))
+#+end_src
+
+**** Zig
+
+Zig is a general-purpose programming language still under active development.
+This configuration enables =zig-mode= and integrates it with Eglot for LSP support.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (use-package zig-mode
+    :ensure t
+    :hook (zig-ts-mode . eglot-ensure))
+#+end_src
+
+**** Rust
+
+[[https://rust-lang.org/][Rust]] is a strongly typed systems programming language I use frequently.
+=rust-ts-mode= is preferred over the legacy mode, with Eglot providing LSP features such as formatting and inlay hints.
+Clippy is configured to provide linting and suggestions on save.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (use-package rust-ts-mode
+    :ensure nil ; built-in
+    :hook ((rust-ts-mode . eglot-ensure)))
+
+  (defun slp/rust-format-on-save ()
+    "Enable formatting on save once Eglot is managing the buffer."
+    (when (eglot-managed-p)
+      (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
+
+  (add-hook 'eglot-managed-mode-hook #'slp/rust-format-on-save)
+  (add-hook 'eglot-managed-mode-hook #'eglot-inlay-hints-mode)
+#+end_src
+
+***** Clippy
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+                 '(rust-ts-mode . ("rust-analyzer"))))
+
+  (setq eglot-workspace-configuration
+        '((:rust-analyzer
+           (:check (:command "clippy")))))
+#+end_src
+
+
+***** project.el fix
+
+=project.el= has trouble recognizing ~Cargo.toml~, so we make sure it is explicitly told about this filetype.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (setq project-vc-extra-root-markers '("Cargo.toml"))
+#+end_src
+
+
+**** Typescript
+
+Typescript extends JavaScript with static typing.
+This configuration uses =typescript-ts-mode= and =tsx-ts-mode= with Eglot hooks for LSP support.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (use-package typescript-mode
+    :ensure t
+    :hook ((typescript-ts-mode . eglot-ensure)
+           (tsx-ts-mode . eglot-ensure)))
+#+end_src
+
+**** Futhark
+
+I use Futhark for university, and =futhark-mode= provides syntax highlighting, automatic indentation and interaction with an inferior ~futhark repl~ process.
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (use-package futhark-mode
+    :ensure t
+    :hook ((futhark-mode . eglot-ensure)
+           (futhark-mode . futhark-fmt-on-save-mode)))
+#+end_src
+
+*** Provide programming
+
+#+begin_src emacs-lisp :tangle "modules/slp-programming.el"
+  (provide 'slp-programming)
+#+end_src
+
+** Org
+
+All Org Mode-related configuration in contained in ~slp-org.el~ and tangled from this file.
+
+Org Mode is one of the most useful features of Emacs, and at its core, it is a lightweight markup language.
+This entire file is written using its syntax, and allows export, formatting, code blocks which can be executed in a document otherwise containing prose, and much more.
+
+*** General settings
+
+#+begin_src emacs-lisp :tangle "modules/slp-org.el" :mkdirp yes
+  ;;; General org settings
+  (setq org-directory (expand-file-name "~/Documents/org/"))
+  (setq org-imenu-depth 7)
+
+  (setq org-ellipsis " ▼")
+  (setq org-special-ctrl-a/e nil)
+  (setq org-special-ctrl-k nil)
+  (setq org-M-RET-may-split-line '((default . nil)))
+  (setq org-hide-emphasis-markers nil)
+  (setq org-hide-macro-markers nil)
+  (setq org-hide-leading-stars nil)
+  (setq org-cycle-seperator-lines 0)
+  (setq org-structure-template-alist
+        '(("s" . "src")
+  	("e" . "src emacs-lisp")
+  	("E" . "src emacs-lisp :results value code :lexical t")
+  	("t" . "src emacs-lisp :tangle FILENAME")
+  	("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
+  	("x" . "example")
+  	("X" . "export")
+  	("q" . "quote")))
+  (setq org-fold-catch-invisible-edits 'show)
+  (setq org-return-follows-link nil)
+  (setq org-loop-over-headlines-in-active-region 'start-level)
+  (setq org-insert-heading-respect-content t)
+  (setq org-read-date-prefer-future 'time)
+  (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
+  (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-fontify-whole-block-delimiter-line t)
+  (setq org-track-ordered-property-with-tag t)
+#+end_src
+
+*** Provide Org
+
+#+begin_src emacs-lisp :tangle "modules/slp-org.el"
+  (provide 'slp-org)
+#+end_src
+
+** Dired
+
+Emacs comes with =Dired=, a built-in file manager.
+The following settings define some basic refinements to the behavior of common operations for copying, renaming and deleting files.
+
+=Dired= displays extensive details by default, which are hidden here using ~hide-hide-details-mode~ for a cleaner view.
+
+#+begin_src emacs-lisp :tangle "modules/slp-dired.el"
+  (use-package dired
+    :ensure nil
+    :commands (dired)
+    :hook
+    ((dired-mode . dired-hide-details-mode)
+     (dired-mode . hl-line-mode))
+    :config
+    (setq dired-recursive-copies 'always)
+    (setq dired-recursive-deletes 'always)
+    (setq dired-dwim-target t))
+#+end_src
+
+The =dired-subtree= package allows expanding and collapsing directory subtrees directly in the Dired buffer using =TAB= or =SHIFT-TAB=.
+
+#+begin_src emacs-lisp :tangle "modules/slp-dired.el"
+  (use-package dired-subtree
+    :ensure t
+    :after dired
+    :bind
+    ( :map dired-mode-map
+      ("<tab>" . dired-subtree-toggle)
+      ("TAB" . dired-subtree-toggle)
+      ("<backtab>" . dired-subtree-remove)
+      ("S-TAB" . dired-subtree-remove))
+    :config
+    (setq dired-subtree-use-backgrounds nil))
+#+end_src
+
+*** Provide Dired
+
+#+begin_src emacs-lisp :tangle "modules/slp-dired.el"
+  (provide 'slp-dired)
+#+end_src
+
+** Spellchecking
+
+I write a lot of prose in Emacs (as evident from the fact I write prose to configure Emacs itself), and thus spellchecking is a nice feature to have.
+A general-purpose spellchecker complements =Cape=, highlighting misspelled words in the visible portion of buffers, particularly useful when editing prose or collaborative documents.
+
+Using many of his other packages for their excellent and well-documented features, Daniel Mendler's [[https://github.com/minad/jinx][jinx]] package stood out to me.
+
+On Arch Linux, it requires the packages ~enchant~ and ~pkgconf~ to be installed already.
+
+#+begin_src emacs-lisp :tangle "modules/slp-spellcheck.el"
+  (use-package jinx
+    :ensure t
+    :hook (emacs-startup . global-jinx-mode)
+    :bind (("M-$" . jinx-correct)
+           ("C-M-$" . jing-languages)))
+#+end_src
+
+*** Provide Spellchecking
+
+#+begin_src emacs-lisp :tangle "modules/slp-spellcheck.el"
+  (provide 'slp-spellcheck)
+#+end_src
+
+
+** Version Control
+
+Version control tracks changes to files over time. I use it extensively, both for code and prose, often publishing work on platforms like GitHub.
+
+Emacs has many great packages to make version control easier and useful for most workflows, and mine heavily revolves around [[https://magit.vc/][Magit]] by Jonas Bernoulli.
+
+*** Highlight differences between upstream and local
+
+[[https://github.com/dgutov/diff-hl][diff-hl]] is a package which highlights uncommitted changes on the side of the window, and allows one to jump between and revert them selectively.
+It also works for =Dired=.
+
+It works on "hunks", which is another word for current local versions against a version-controlled upstream.
+
+Since I want to really utilize the packages I install and enable more, I have decided to list =diff-hl='s commands in an effort to remember these exist, as well as how to invoke them.
+
+| Provided commands             | Keybinding | Explanation                                                                                                                                                       |
+|-------------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ~diff-hl-diff-goto-hunk~      | ~C-x v =~  | Shows a side-by-side diff of the current "hunk" and the last committed version.                                                                                   |
+| ~diff-hl-revert-hunk~         | ~C-x v n~  | Reverts the current hunk to its last committed state.                                                                                                             |
+| ~diff-hl-previous-hunk~       | ~C-x v [~  | Moves the cursor to the previous hunk in the buffer.                                                                                                              |
+| ~diff-hl-next-hunk~           | ~C-x v ]~  | Moves the cursor to the next hunk in the buffer.                                                                                                                  |
+| ~diff-hl-show-hunk~           | ~C-x v *~  | Shows a popup of the hunk at point, usually in a temporary window or overlay.                                                                                     |
+| ~diff-hl-stage-current-hunk~  | ~C-x v S~  | Stages the current hunk for commit.                                                                                                                               |
+| ~diff-hl-set-reference-rev~   |            | Sets a reference revision for comparison. Normally, diff-hl compares against HEAD. With this command, one can set a specific commit or branch to compary against. |
+| ~diff-hl-reset-reference-rev~ |            | Resets the reference revision back to the default.                                                                                                                |
+| ~diff-hl-unstage-file~        |            | Unstages all changes in the current file.                                                                                                                         |
+
+I enable it globally, as more than just my code is version-controlled, and thus it is useful in almost any buffer I open.
+Hooks are added to integrate =diff-hl= with =Magit= for automatic updates.
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package diff-hl
+    :after magit
+    :ensure t
+    :hook ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+           (magit-post-refresh . diff-hl-magit-post-refresh))
+    :config
+    (global-diff-hl-mode))
+#+end_src
+
+*** Magit
+
+[[https://magit.vc/][Magit]] is a complete text-based user interface to =Git= (a so-called "Git Porcelain").
+
+Details TBD.
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package magit
+    :ensure-system-package git
+    :ensure t
+    :bind (("M-g b" . magit-blame-addition)
+           :map magit-mode-map
+           ("C-M-f" . magit-section-forward)
+           ("C-M-b" . magit-section-backward))
+    :config
+    (setq magit-mode-quit-window 'magit-restore-window-configuration
+          magit-auto-revert-mode t))
+#+end_src
+
+*** Forge
+
+Forge adds GitHub/GitLab integration, configured here (details TBD).
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package forge
+    :ensure t
+    :after magit)
+#+end_src
+
+*** Blamer
+
+Blamer adds a blame plugin inspired by VS Code's GitLens, which shows details for the currently selected line(s) regarding what commit the line is from, and who wrote it.
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package blamer
+    :ensure t
+    :after magit
+    :bind (("C-c g i" . blamer-show-commit-info)
+           ("C-c g b" . blamer-show-posframe-commit-info))
+    :custom
+    (blamer-idle-time 0.3)
+    (blamer-min-offset 4)
+    (blamer-max-commit-message-length 100)
+    (blamer-datetime-formatter "[%s]")
+    (blamer-commit-formatter " ● %s")
+    :custom-face
+    (blamer-face ((t :foreground "#7aa2cf"
+                     :background nil
+                     :height 1
+                     :italic nil))))
+#+end_src
+
+*** Git link
+
+Provides URLs to GitHub/GitLab commits, PRs, etc. Details TBD
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package git-link
+    :ensure t
+    :custom
+    (git-link-use-commit t)
+    (git-link-open-in-browser t))
+#+end_src
+
+*** Git timemachine
+
+Lets me browse a file's previous revisions, and therefore complements =diff-hl=, =Magit= and =Blamer=.
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (use-package git-timemachine
+    :ensure t)
+#+end_src
+
+*** Provide Version Control
+
+#+begin_src emacs-lisp :tangle "modules/slp-vc.el"
+  (provide 'slp-vc)
+#+end_src
