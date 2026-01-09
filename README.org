@@ -2,12 +2,36 @@
 
 * About
 
-Primarily a repository for my GNU Emacs configuration, along with related software.
+These are my application configuration files built primarily around an Arch Linux workstation, along with two MacBook Air laptops. These use M1, and M2, and are running MacOS.
 
-My configuration is primarily built around my primary workstation, which is a PC using Arch Linux.
-I also have a laptop, MacBook Air M1, and a work laptop, MacBook Air M2, which also uses some of these configuration files.
+For my Arch Linux computer, I use ~pacman~ to manage its software.
+For my MacOS-related computers, I mainly use ~brew~ to manage their software.
+I use language-specific options like ~rustup~ and ~ghcup~ on both systems.
 
-For my Arch Linux computer, I use ~pacman~ to manage its software, along with language-specific tools like ~GHCup~ and ~rustup~.
-For my MacOS-related computers, I mainly use ~brew~ to manage their software, along with language-specific tools.
+* Managed programs
+** Emacs
 
- 
+My configuration for [[file:emacs/.emacs.d/config.org][GNU Emacs]] is written using literate programming.
+
+On Arch Linux, I use the [[https://archlinux.org/packages/extra/x86_64/emacs-wayland/][Wayland]] prebuilt package, and on MacOS I use [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]].
+
+** niri
+
+I am currently using [[https://github.com/YaLTeR/niri][niri (GitHub)]] as my Wayland compositor.
+
+* GNU Stow
+
+[[https://www.gnu.org/software/stow/][Stow]] is a GNU project described as a symlink farm manager.
+
+It is particularly useful to facilitate a more controlled approach to managing my configuration files, as I can easily divide each configuration into its own path, which =Stow= can then read and symlink to.
+
+=Stow= can be invoked via the following command:
+
+#+begin_src
+  stow [options] [action flag] package ...
+#+end_src
+
+Each /package/ is the name of a package in this repository, and I keep them separated to allow for easy management for multiple systems.
+For example, my Arch Linux system uses =niri=, while my MacOS computers do not, and I can invoke only the packages I need.
+
+Documentation for Stow can be found [[https://www.gnu.org/software/stow/manual/stow.html][here]].
