@@ -149,13 +149,14 @@ The ~init.el~ file is responsible for the remainder of the setup: Setup of the p
 
 ** Setup package manager
 
-Setting up ~package.el~ is straightforward: given that ~package-enable-at-startup~ was set to ~t~ in the /early init file/, we do not need to require it or initialize it here.
-Instead, we add /MELPA/ as an additional package archive to ELPA.
+Setting up ~package.el~ is straightforward: given that ~package-enable-at-startup~ was set to ~t~ in the /early init file/, we do not need to require it or initialize it here on Arch Linux, but I found that it would not work correctly on =MacOS= unless I used ~package-initialize~.
+We add /MELPA/ as an additional package archive to ELPA.
 
 #+begin_src emacs-lisp :tangle "init.el"
   ;;; Setup package manager archives
   (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/") t)
+               '("melpa" . "https://stable.melpa.org/#/") t)
+  (package-initialize)
 #+end_src
 
 ** Load modules
@@ -266,6 +267,20 @@ While I rarely use this interface, any changes made through it are redirected to
 #+begin_src emacs-lisp :tangle "init.el"
   (setq custom-file (locate-user-emacs-file "custom.el"))
   (load custom-file :no-error-if-file-is-missing)
+#+end_src
+
+*** MacOS keybindings
+
+MacOS has a different keyboard layout, with its =control=, =option= and =command= keys, and these usually require different keypresses than I'm used to.
+I thus change the keybindings when Emacs detects itself running on =MacOS=
+
+#+begin_src emacs-lisp :tangle "init.el"
+  (when (eq system-type 'darwin)
+        (setq mac-command-modifier 'meta
+              mac-option-modifier nil
+              mac-control-modifier 'control
+              mac-right-command-modifier 'super
+              mac-right-control-modifier 'hyper))
 #+end_src
 
 * Modules

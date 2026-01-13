@@ -1,6 +1,7 @@
 ;;; Setup package manager archives
 (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+             '("melpa" . "https://stable.melpa.org/#/") t)
+(package-initialize)
 
 (dolist (dir '("modules"))
   (let ((path (locate-user-emacs-file dir)))
@@ -49,3 +50,10 @@
 
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file :no-error-if-file-is-missing)
+
+(when (eq system-type 'darwin)
+      (setq mac-command-modifier 'meta
+            mac-option-modifier nil
+            mac-control-modifier 'control
+            mac-right-command-modifier 'super
+            mac-right-control-modifier 'hyper))
