@@ -155,7 +155,7 @@ We add /MELPA/ as an additional package archive to ELPA.
 #+begin_src emacs-lisp :tangle "init.el"
   ;;; Setup package manager archives
   (add-to-list 'package-archives
-               '("melpa" . "https://stable.melpa.org/#/") t)
+               '("melpa" . "https://melpa.org/packages/") t)
   (package-initialize)
 #+end_src
 

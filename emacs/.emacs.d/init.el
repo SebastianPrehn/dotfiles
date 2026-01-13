@@ -1,6 +1,6 @@
 ;;; Setup package manager archives
 (add-to-list 'package-archives
-             '("melpa" . "https://stable.melpa.org/#/") t)
+             '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
 (dolist (dir '("modules"))
