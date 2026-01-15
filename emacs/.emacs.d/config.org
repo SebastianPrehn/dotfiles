@@ -181,6 +181,8 @@ Once the =modules= directory is available, the desired modules are listed explic
   (require 'slp-dired)
   (require 'slp-spellcheck)
   (require 'slp-vc)
+  (require 'slp-chatting)
+  (require 'slp-elfeed)
 #+end_src
 
 ** Defaults
@@ -225,7 +227,7 @@ Luckily, Steve Purcell has made a package which neatly solves this problem with 
 
 Furthermore, we make it so that ~$MANPATH~, ~$PATH~ and ~exec-path~ is set from the shell, but only when executed in a GUI frame on OS X and Linux.
 
-#+begin_src emacs-lisp :tangle "init.el"
+#+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :ensure t
     :config
@@ -994,7 +996,6 @@ On Arch Linux, it requires the packages ~enchant~ and ~pkgconf~ to be installed 
   (provide 'slp-spellcheck)
 #+end_src
 
-
 ** Version Control
 
 Version control tracks changes to files over time. I use it extensively, both for code and prose, often publishing work on platforms like GitHub.
@@ -1112,4 +1113,81 @@ Lets me browse a file's previous revisions, and therefore complements =diff-hl=,
 
 #+begin_src emacs-lisp :tangle "modules/slp-vc.el"
   (provide 'slp-vc)
+#+end_src
+
+
+** Chatting
+
+*** ERC
+
+[[https://www.gnu.org/software/emacs/erc.html][ERC]] is a built-in Emacs package which allows us to connect and communicate via the Internet Relay Chat (IRC) Protocol.
+It is widely used in free software and open source development spaces, and so I configure Emacs to be able to connect and be used for it.
+
+#+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
+    (use-package erc
+      :config
+      (setopt erc-modules
+              (seq-union '(nicks bufbar nickbar scrolltobottom)
+                          erc-modules))
+
+      :custom
+      ;; Avoid sending excess lines
+      (erc-inhibit-multiline-input t)
+      (erc-send-whitespace-lines t)
+      (erc-ask-about-multiline-input t)
+      ;; Scroll all windows to prompt when submitting input.
+      (erc-scrolltobottom-all t)
+      ;;  Reconnect automatically
+      (erc-server-reconnect-function #'erc-server-delayed-check-reconnect)
+      (erc-server-reconnect-timeout 30)
+
+      ;; Show new buffers in the current window instead of a split.
+      (erc-interactive-display 'buffer)
+
+      (erc-nick "seblp")
+      (erc-user-full-name "Sebastian Larsen Prehn")
+
+      ;; Emphasize buttonized text in notices.
+      :custom-face (erc-notice-face ((t (:slant italic :weight unspecified)))))
+
+    (use-package erc-join
+      ;; Join list of channels whenever I connect to Libera.Chat.
+      :custom (erc-autojoin-channels-alist '((Libera.Chat "#emacs" "#diku" "#erc" "#archlinux" "#archlinux-offtopic"))))
+    (use-package erc-fill
+      :custom
+      ;; Prefer one message per line without continuation indicators.
+      (erc-fill-function #'erc-fill-wrap)
+      (erc-fill-static-center 18))
+#+end_src
+
+*** Provide chatting
+
+#+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
+  (provide 'slp-chatting)
+#+end_src
+
+** Elfeed
+
+#+begin_src emacs-lisp :tangle "modules/slp-elfeed.el"
+  (use-package elfeed
+    :ensure t
+    :bind ("C-x e" . elfeed)
+    :config
+    (setq elfeed-feeds
+          '("http://nullprogram.com/feed/"
+            "https://planet.emacslife.com/atom.xml"
+            "https://stallman.org/rss/rss.xml"
+            "https://sophiebos.io/index.xml"
+            "https://sigkill.dk/atom.xml"
+            "https://xkcd.com/rss.xml"
+            "https://danluu.com/atom.xml"
+            "https://drewdevault.com/blog/index.xml"
+            "https://ogbe.net/blog-feed.xml"
+            "https://scripter.co/index.xml")))
+#+end_src
+
+*** Provide Elfeed
+
+#+begin_src emacs-lisp :tangle "modules/slp-elfeed.el"
+  (provide 'slp-elfeed)
 #+end_src

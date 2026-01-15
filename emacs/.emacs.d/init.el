@@ -15,6 +15,8 @@
 (require 'slp-dired)
 (require 'slp-spellcheck)
 (require 'slp-vc)
+(require 'slp-chatting)
+(require 'slp-elfeed)
 
 (setq-default indent-tabs-mode nil)
 
@@ -29,15 +31,6 @@
 (setq use-dialog-box nil)
 (setq frame-resize-pixelwise t)
 (setq default-frame-alist '((undecorated . t)))
-
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  ((dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"))
-  (add-to-list 'exec-path-from-shell-variables var))))
-
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
 
 (delete-selection-mode 1) ; Delete selection when typing
 (global-auto-revert-mode 1) ; Auto update buffer when file changes outside of Emacs (vc etc.)
