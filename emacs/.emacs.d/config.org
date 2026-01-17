@@ -1124,40 +1124,51 @@ Lets me browse a file's previous revisions, and therefore complements =diff-hl=,
 It is widely used in free software and open source development spaces, and so I configure Emacs to be able to connect and be used for it.
 
 #+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
-    (use-package erc
-      :config
-      (setopt erc-modules
-              (seq-union '(nicks bufbar nickbar scrolltobottom)
-                          erc-modules))
+  (use-package erc
+    :config
+    (setopt erc-modules
+            (seq-union '(nicks bufbar nickbar scrolltobottom)
+                        erc-modules))
 
-      :custom
-      ;; Avoid sending excess lines
-      (erc-inhibit-multiline-input t)
-      (erc-send-whitespace-lines t)
-      (erc-ask-about-multiline-input t)
-      ;; Scroll all windows to prompt when submitting input.
-      (erc-scrolltobottom-all t)
-      ;;  Reconnect automatically
-      (erc-server-reconnect-function #'erc-server-delayed-check-reconnect)
-      (erc-server-reconnect-timeout 30)
+    :custom
+    ;; Avoid sending excess lines
+    (erc-inhibit-multiline-input t)
+    (erc-send-whitespace-lines t)
+    (erc-ask-about-multiline-input t)
+    ;; Scroll all windows to prompt when submitting input.
+    (erc-scrolltobottom-all t)
+    ;;  Reconnect automatically
+    (erc-server-reconnect-function #'erc-server-delayed-check-reconnect)
+    (erc-server-reconnect-timeout 30)
 
-      ;; Show new buffers in the current window instead of a split.
-      (erc-interactive-display 'buffer)
+    (erc-nick "seblp")
+    (erc-user-full-name "Sebastian Larsen Prehn")
+    ;; Show new buffers in the current window instead of a split.
+    (erc-interactive-display 'buffer)
 
-      (erc-nick "seblp")
-      (erc-user-full-name "Sebastian Larsen Prehn")
+    (erc-hide-list '("JOIN" "PART" "QUIT"))
+    (erc-lurker-hide-list '("JOIN" "PART" "QUIT"))
+    ;; Emphasize buttonized text in notices.
+    :custom-face (erc-notice-face ((t (:slant italic :weight unspecified)))))
 
-      ;; Emphasize buttonized text in notices.
-      :custom-face (erc-notice-face ((t (:slant italic :weight unspecified)))))
+  (use-package erc-join
+  :custom 
+  (erc-autojoin-channels-alist 
+   '((Libera.Chat "#emacs" "#diku" "#erc" "#archlinux" 
+                  "#archlinux-offtopic" "#archlinux-aur" "#archlinux-security"))))
 
-    (use-package erc-join
-      ;; Join list of channels whenever I connect to Libera.Chat.
-      :custom (erc-autojoin-channels-alist '((Libera.Chat "#emacs" "#diku" "#erc" "#archlinux" "#archlinux-offtopic"))))
-    (use-package erc-fill
-      :custom
-      ;; Prefer one message per line without continuation indicators.
-      (erc-fill-function #'erc-fill-wrap)
-      (erc-fill-static-center 18))
+  (use-package erc-fill
+    :custom
+    ;; Prefer one message per line without continuation indicators.
+    (erc-fill-function #'erc-fill-wrap)
+    (erc-fill-static-center 18))
+#+end_src
+
+#+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
+(defun slp/connect-libera ()
+     (interactive)
+     (erc-tls :server "irc.libera.chat" :port 6697
+              :client-certificate t))
 #+end_src
 
 *** Provide chatting
