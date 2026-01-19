@@ -527,11 +527,16 @@ Only the core functionality is configured here, with additional language-specifi
 #+begin_src emacs-lisp :tangle "modules/slp-completion.el"
   (use-package corfu
     :ensure t
+    :after orderless
     :custom
-    (corfu-cycle t)
+    (corfu-cycle t) ;; Enable cycling for `corfu-next/previous'
     (corfu-auto t) ;; Enable auto completion
+    (corfu-separator ?\s)
+    (corfu-quit-at-boundary nil)
+    (corfu-quit-no-match nil)
     :init
-    (global-corfu-mode))
+    (global-corfu-mode)
+    (setq corfu-auto t))
 #+end_src
 
 Following the =corfu= example configuration, we set up a few extra useful configurations.
@@ -1194,7 +1199,13 @@ It is widely used in free software and open source development spaces, and so I 
             "https://danluu.com/atom.xml"
             "https://drewdevault.com/blog/index.xml"
             "https://ogbe.net/blog-feed.xml"
-            "https://scripter.co/index.xml")))
+            "https://scripter.co/index.xml"
+            "https://pharr.org/matt/blog/feed.xml"
+            "https://writing.kemitchell.com/feed.xml"
+            "https://pythonspeed.com/atom.xml"
+            "https://devblog.archlinux.page/atom.xml"
+            "https://www.dr.dk/nyheder/service/feeds/senestenyt"
+            "https://www.dr.dk/nyheder/service/feeds/viden")))
 #+end_src
 
 *** Provide Elfeed
