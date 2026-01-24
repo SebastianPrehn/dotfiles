@@ -1190,27 +1190,63 @@ It is widely used in free software and open source development spaces, and so I 
 
 ** Elfeed
 
+I use [[https://github.com/skeeto/elfeed][Elfeed]] as my web feed, where I primarily use it to access blogs and my YouTube subscriptions that I want to keep up with.
+
+Blogs are my preferred medium, and there exists so many blogs which are both useful and thought provoking, especially in an age where the [[https://en.wikipedia.org/wiki/Enshittification][enshittification]] of the internet feels all too real.
+Blogs contain human thoughts, ideas, and the passion of someone who wants to connect with the world.
+
+I keep my YouTube subscriptions as a web feed because I otherwise end up spending too much time on YouTube feeling entrapped in their algorithm as I sometimes watched hours of content which I did not really engage with.
+While this approach leads to less organic discovery of new channels, this way encourages that I engage with those I already enjoy, while still having the option of seeing other recommended videos when
+I open the videos of those I follow.
+
 #+begin_src emacs-lisp :tangle "modules/slp-elfeed.el"
   (use-package elfeed
     :ensure t
     :bind ("C-x e" . elfeed)
     :config
     (setq elfeed-feeds
-          '("http://nullprogram.com/feed/"
-            "https://planet.emacslife.com/atom.xml"
-            "https://stallman.org/rss/rss.xml"
-            "https://sophiebos.io/index.xml"
-            "https://sigkill.dk/atom.xml"
-            "https://xkcd.com/rss.xml"
-            "https://danluu.com/atom.xml"
-            "https://drewdevault.com/blog/index.xml"
-            "https://ogbe.net/blog-feed.xml"
-            "https://scripter.co/index.xml"
-            "https://pharr.org/matt/blog/feed.xml"
-            "https://writing.kemitchell.com/feed.xml"
-            "https://pythonspeed.com/atom.xml"
-            "https://devblog.archlinux.page/atom.xml"
-            "https://ploum.net/atom_en.xml")))
+          '(("http://nullprogram.com/feed/" blog)
+            ("https://planet.emacslife.com/atom.xml" blog emacs)
+            ("https://stallman.org/rss/rss.xml" blog)
+            ("https://sophiebos.io/index.xml" blog)
+            ("https://sigkill.dk/atom.xml" blog)
+            ("https://xkcd.com/rss.xml" comics)
+            ("https://danluu.com/atom.xml" blog)
+            ("https://drewdevault.com/blog/index.xml" blog)
+            ("https://scripter.co/index.xml" blog emacs)
+            ("https://pharr.org/matt/blog/feed.xml" blog)
+            ("https://writing.kemitchell.com/feed.xml" blog)
+            ("https://pythonspeed.com/atom.xml" blog)
+            ("https://devblog.archlinux.page/atom.xml" blog arch)
+            ("https://ploum.net/atom_en.xml" blog)
+            ("https://protesilaos.com/master.xml" blog)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCCbfB3cQtkEAiKfdRQnfQvw" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC8bSNxb8Oc7b28N2TTrQC1g" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCcoO-8J0EYQHGPFQqwmAzVQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCXGR70CkW_pXb8n52LzCCRw" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCE1jXbVAGJQEORz9nZqb5bQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCUMwY9iS8oMyWDYIe6_RmoA" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCzJ3EGLJbFcHJJ8r1rNGSJQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC-ufRLYrXxrIEApGn9VG5pQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCEQ7KR9enYdQsB6kcMnw0NA" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCR-DXc1voovS8nhAvccRZhg" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCwHwDuNd9lCdA7chyyquDXw" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCgdTVe88YVSrOZ9qKumhULQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCq8ZAAsI89IoJ-fn1gYpO3g" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCHnyfMqiRRG1u-2MsSQLbXA" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC7EUErrXAtCjdr8-SuLaGow" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCsXVk37bltHxD1rDPwtNM8Q" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCV6g95OBbVtFmN9uiJzkFqQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCtJrxXDeJ9bINlrW-RPBI9Q" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC4dxXZQq-ofAadUWbqhoceQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC9-y-6csu5WGm29I7JiwpnA" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCAbAsEZ-0LccTNbl8r-3EaQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC_iD0xppBwwsrM9DegC5cQQ" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCSp-OaMpsO8K0KkOqyBl7_w" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCj74rJ9Lgl3WTngq675wxKg" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UCy0tKL1T7wFoYcxCe0xjN6Q" youtube)
+            ("https://www.youtube.com/feeds/videos.xml?channel_id=UC--_DvRzKXtQyVdOWVLUJCA" youtube))))
 #+end_src
 
 *** Provide Elfeed
