@@ -346,20 +346,26 @@ Its modeline is one such feature, and I use it here for its simplicity and polis
 
 Choosing a theme is one of the more subjective aspects of an Emacs configuration, but it has a tangible impact on readability and long-term comfort.
 
-I use the [[https://github.com/ogdenwebb/emacs-kaolin-themes][kaolin-themes]] package, which I think strikes a good balance between expressiveness and readability.
+I use the [[https://github.com/ogdenwebb/emacs-kaolin-themes][kaolin-themes]] package on MacOS, which I think strikes a good balance between expressiveness and readability.
+
+for my Arch Linux, I use =noctalia=, which is part of the [[https://noctalia.dev/][noctalia desktop shell]] I am currently using.
 
 A small number of theme options are enabled to improve visual clarity, and to better distinguish between different types of lines.
 
 #+begin_src emacs-lisp :tangle "modules/slp-interface.el"
-  (use-package kaolin-themes
-    :ensure t
-    :custom
-    (kaolin-themes-italic-comments t)
-    (kaolin-themes-hl-line-colored t)
-    (kaolin-themes-distinct-fringe t)
-    (kaolin-themes-git-gutter-solid t)
-    :config
-    (load-theme 'kaolin-dark t))
+  (setq custom-safe-themes t)
+  (add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
+  (if (eq system-type 'gnu/linux)
+      (load-theme 'noctalia t)
+    (use-package kaolin-themes
+      :ensure t
+      :custom
+      (kaolin-themes-italic-comments t)
+      (kaolin-themes-hl-line-colored t)
+      (kaolin-themes-distinct-fringe t)
+      (kaolin-themes-git-gutter-solid t)
+      :config
+      (load-theme 'kaolin-dark t)))
 #+end_src
 
 *** Provide interface

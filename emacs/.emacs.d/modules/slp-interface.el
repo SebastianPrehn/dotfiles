@@ -34,14 +34,18 @@
   (doom-modeline-lsp-icon t)
   (doom-modeline-time-icon t))
 
-(use-package kaolin-themes
-  :ensure t
-  :custom
-  (kaolin-themes-italic-comments t)
-  (kaolin-themes-hl-line-colored t)
-  (kaolin-themes-distinct-fringe t)
-  (kaolin-themes-git-gutter-solid t)
-  :config
-  (load-theme 'kaolin-dark t))
+(setq custom-safe-themes t)
+(add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
+(if (eq system-type 'gnu/linux)
+    (load-theme 'noctalia t)
+  (use-package kaolin-themes
+    :ensure t
+    :custom
+    (kaolin-themes-italic-comments t)
+    (kaolin-themes-hl-line-colored t)
+    (kaolin-themes-distinct-fringe t)
+    (kaolin-themes-git-gutter-solid t)
+    :config
+    (load-theme 'kaolin-dark t)))
 
 (provide 'slp-interface)

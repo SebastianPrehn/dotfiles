@@ -67,11 +67,16 @@
 
 (use-package corfu
   :ensure t
+  :after orderless
   :custom
-  (corfu-cycle t)
+  (corfu-cycle t) ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t) ;; Enable auto completion
+  (corfu-separator ?\s)
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match nil)
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (setq corfu-auto t))
 
 (use-package emacs
   :custom
