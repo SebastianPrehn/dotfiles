@@ -108,6 +108,8 @@ layout {
     // Set gaps around windows in logical pixels.
     gaps 5
 
+    // Set background color to transparent
+    background-color "transparent"
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
     //   or right edge of the screen.
@@ -262,8 +264,11 @@ layout {
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
 
+// This line starts noctalia, a popular desktop shell for Wayland
+spawn-at-startup "qs" "-c" "noctalia-shell"
+
 // This line starts waybar, a commonly used bar for Wayland compositors.
-spawn-at-startup "waybar"
+//spawn-at-startup "waybar"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
@@ -343,8 +348,18 @@ window-rule {
 // Example: enable rounded corners for all windows.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {
-    geometry-corner-radius 12
+    geometry-corner-radius 20
     clip-to-geometry true
+}
+
+layer-rule {
+    match namespace="^noctalia-wallpaper*"
+    place-within-backdrop true
+}
+
+debug {
+      // Allows notification actions and window activation from Noctalia.
+      honor-xdg-activation-with-invalid-serial
 }
 
 binds {
