@@ -1210,8 +1210,6 @@ It is widely used in free software and open source development spaces, and so I 
             "https://writing.kemitchell.com/feed.xml"
             "https://pythonspeed.com/atom.xml"
             "https://devblog.archlinux.page/atom.xml"
-            "https://www.dr.dk/nyheder/service/feeds/senestenyt"
-            "https://www.dr.dk/nyheder/service/feeds/viden"
             "https://ploum.net/atom_en.xml")))
 #+end_src
 
