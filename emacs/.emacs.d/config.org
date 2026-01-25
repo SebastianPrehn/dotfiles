@@ -1220,6 +1220,8 @@ I open the videos of those I follow.
             ("https://devblog.archlinux.page/atom.xml" blog arch)
             ("https://ploum.net/atom_en.xml" blog)
             ("https://protesilaos.com/master.xml" blog)
+            ("https://noonker.github.io/index.xml" blog)
+            ("https://www.schneier.com/feed/atom/" blog security)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCCbfB3cQtkEAiKfdRQnfQvw" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UC8bSNxb8Oc7b28N2TTrQC1g" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCcoO-8J0EYQHGPFQqwmAzVQ" youtube)
