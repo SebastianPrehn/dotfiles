@@ -905,36 +905,121 @@ This entire file is written using its syntax, and allows export, formatting, cod
 
 #+begin_src emacs-lisp :tangle "modules/slp-org.el" :mkdirp yes
   ;;; General org settings
-  (setq org-directory (expand-file-name "~/Documents/org/"))
-  (setq org-imenu-depth 7)
+  (use-package org
+    :ensure nil ; org is built-in
+    :bind (("C-c c" . org-capture)
+           ("C-c a" . org-agenda)
+           ("C-c l" . org-store-link))
+    :custom
+    (org-directory (expand-file-name "~/Documents/org/"))
+    (org-imenu-depth 7)
+    (org-ellipsis " ▼")
+    (org-special-ctrl-a/e nil)
+    (org-special-ctrl-k nil)
+    (org-M-RET-may-split-line '((default . nil)))
+    (org-hide-emphasis-markers nil)
+    (org-hide-macro-markers nil)
+    (org-hide-leading-stars nil)
+    (org-cycle-separator-lines 0)
+    (org-fold-catch-invisible-edits 'show)
+    (org-return-follows-link nil)
+    (org-loop-over-headlines-in-active-region 'start-level)
+    (org-insert-heading-respect-content t)
+    (org-read-date-prefer-future 'time)
+    (org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
+    (org-fontify-quote-and-verse-blocks t)
+    (org-fontify-whole-block-delimiter-line t)
+    (org-track-ordered-property-with-tag t)
+    (org-structure-template-alist
+     '(("s" . "src")
+  	 ("e" . "src emacs-lisp")
+  	 ("E" . "src emacs-lisp :results value code :lexical t")
+  	 ("t" . "src emacs-lisp :tangle FILENAME")
+  	 ("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
+  	 ("x" . "example")
+  	 ("X" . "export")
+  	 ("q" . "quote")))
 
-  (setq org-ellipsis " ▼")
-  (setq org-special-ctrl-a/e nil)
-  (setq org-special-ctrl-k nil)
-  (setq org-M-RET-may-split-line '((default . nil)))
-  (setq org-hide-emphasis-markers nil)
-  (setq org-hide-macro-markers nil)
-  (setq org-hide-leading-stars nil)
-  (setq org-cycle-seperator-lines 0)
-  (setq org-structure-template-alist
-        '(("s" . "src")
-  	("e" . "src emacs-lisp")
-  	("E" . "src emacs-lisp :results value code :lexical t")
-  	("t" . "src emacs-lisp :tangle FILENAME")
-  	("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
-  	("x" . "example")
-  	("X" . "export")
-  	("q" . "quote")))
-  (setq org-fold-catch-invisible-edits 'show)
-  (setq org-return-follows-link nil)
-  (setq org-loop-over-headlines-in-active-region 'start-level)
-  (setq org-insert-heading-respect-content t)
-  (setq org-read-date-prefer-future 'time)
-  (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
-  (setq org-fontify-quote-and-verse-blocks t)
-  (setq org-fontify-whole-block-delimiter-line t)
-  (setq org-track-ordered-property-with-tag t)
+    :config
+    (defvar slp/deep-work-file
+      (expand-file-name "deep-work.org" org-directory)
+      "Path to deep work org file.")
+
+    (setq org-agenda-files (list slp/deep-work-file))
+
+    (setq org-capture-templates
+      `(("w" "Work Task"
+         entry
+         (file+headline ,slp/deep-work-file "Tasks")
+         "* TODO %^{Task description}\nSCHEDULED: %^t\n:PROPERTIES:\n:WORK_TYPE: %^{Work type|deep|shallow}\n:EFFORT: %^{Effort|2:00|1:30|0:30|0:15}\n:BEST_TIME: %^{Best time|morning|afternoon|evening|anytime}\n:END:\n%U\n"
+         :empty-lines 1)
+        
+        ;; Keep specialized ones if you want quick access to common patterns
+        ("d" "Deep Work (quick)" 
+         entry
+         (file+headline ,slp/deep-work-file "Tasks")
+         "* TODO %^{Task description}\nSCHEDULED: %^t\n:PROPERTIES:\n:WORK_TYPE: deep\n:EFFORT: 2:00\n:BEST_TIME: morning\n:END:\n%U\n"
+         :empty-lines 1)
+        
+        ("q" "Quick Shallow (quick)"
+         entry
+         (file+headline ,slp/deep-work-file "Tasks")
+         "* TODO %^{Task description}\n:PROPERTIES:\n:WORK_TYPE: shallow\n:EFFORT: 0:15\n:BEST_TIME: anytime\n:END:\n"
+         :empty-lines 1)))
+
+    ;; Custom agenda commands
+    (setq org-agenda-custom-commands
+      '(("d" "Deep Work Queue"
+         tags-todo "WORK_TYPE=\"deep\""
+         ((org-agenda-overriding-header "🧠 Deep Work Sessions Available")
+          (org-agenda-prefix-format " %i %-12:c [%e] ")
+          (org-agenda-sorting-strategy '(priority-down effort-down))))
+        
+        ("s" "Shallow Work Queue"
+         tags-todo "WORK_TYPE=\"shallow\""
+         ((org-agenda-overriding-header "📋 Shallow Work Tasks")
+          (org-agenda-prefix-format " %i %-12:c [%e] ")
+          (org-agenda-sorting-strategy '(priority-down effort-up))))
+        
+        ("w" "Work Type Overview"
+         ((tags-todo "WORK_TYPE=\"deep\""
+                     ((org-agenda-overriding-header "🧠 Deep Work (Uninterrupted Focus)")
+                      (org-agenda-prefix-format " %i %-12:c [%e] ")))
+          (tags-todo "WORK_TYPE=\"shallow\""
+                     ((org-agenda-overriding-header "📋 Shallow Work (Administrative)")
+                      (org-agenda-prefix-format " %i %-12:c [%e] "))))
+         ((org-agenda-sorting-strategy '(priority-down effort-down))))
+        
+        ;; Additional useful views
+        ("t" "Today's Schedule"
+         agenda ""
+         ((org-agenda-span 'day)
+          (org-agenda-overriding-header "📅 Today's Schedule")))
+        
+        ("n" "Next 7 Days"
+         agenda ""
+         ((org-agenda-span 7)
+          (org-agenda-overriding-header "📆 Week Ahead")))
+        
+        ("m" "Morning Deep Work"
+         tags-todo "WORK_TYPE=\"deep\"+BEST_TIME=\"morning\""
+         ((org-agenda-overriding-header "🌅 Morning Deep Work Sessions"))))))
+
 #+end_src
+
+*** Agenda
+
+I use the concept of "Deep Work" and "Shallow Work" in my Agenda workflow.
+I first read about this idea from Chris Maiorana's [[https://chrismaiorana.com/org-mode-deep-work-agenda-2026/][blog post]] on the topic.
+
+We set it up to use the following commands:
+- ~C-c a d~ : View all deep work tasks
+- ~C-c a s~ : View all shallow work tasks
+- ~C-c a w~ : View all work types
+- ~C-c c d~ : Capture deep work task (2:00+ effort, intense focus)
+- ~C-c c s~ : Capture shallow work task (>2:00 effort, admin work)
+- ~C-c c q~ : Capture a quick shallow item (0:15 effort)
+- ~C-c c r~ : Capture research/reading task (1:30 effort, deep work)
 
 *** Provide Org
 
