@@ -39,6 +39,10 @@
     (expand-file-name "deep-work.org" org-directory)
     "Path to deep work org file.")
 
+  (defvar slp/journal-file
+    (expand-file-name "journal.org" org-directory)
+    "Path to journal org file.")
+
   (setq org-agenda-files (list slp/deep-work-file))
 
   (setq org-capture-templates
@@ -59,6 +63,12 @@
        entry
        (file+headline ,slp/deep-work-file "Tasks")
        "* TODO %^{Task description}\n:PROPERTIES:\n:WORK_TYPE: shallow\n:EFFORT: 0:15\n:BEST_TIME: anytime\n:END:\n"
+       :empty-lines 1)
+
+      ("j" "Journal Entry"
+       entry
+       (file+datetree ,slp/journal-file)
+       "* %<%H:%M> %^{Title}\n%?\n"
        :empty-lines 1)))
 
   ;; Custom agenda commands
@@ -93,10 +103,6 @@
       ("n" "Next 7 Days"
        agenda ""
        ((org-agenda-span 7)
-        (org-agenda-overriding-header "📆 Week Ahead")))
-      
-      ("m" "Morning Deep Work"
-       tags-todo "WORK_TYPE=\"deep\"+BEST_TIME=\"morning\""
-       ((org-agenda-overriding-header "🌅 Morning Deep Work Sessions"))))))
+        (org-agenda-overriding-header "📆 Week Ahead"))))))
 
 (provide 'slp-org)
