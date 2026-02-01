@@ -1072,9 +1072,12 @@ The =dired-subtree= package allows expanding and collapsing directory subtrees d
   (provide 'slp-dired)
 #+end_src
 
-** Spellchecking
+** Spellchecking and grammar checking
 
-I write a lot of prose in Emacs (as evident from the fact I write prose to configure Emacs itself), and thus spellchecking is a nice feature to have.
+I write a lot of prose in Emacs (as evident from the fact I write prose to configure Emacs itself), and thus spellchecking and grammatical checking is nice features to have.
+
+*** Spellchecking
+
 A general-purpose spellchecker complements =Cape=, highlighting misspelled words in the visible portion of buffers, particularly useful when editing prose or collaborative documents.
 
 Using many of his other packages for their excellent and well-documented features, Daniel Mendler's [[https://github.com/minad/jinx][jinx]] package stood out to me.
@@ -1089,7 +1092,28 @@ On Arch Linux, it requires the packages ~enchant~ and ~pkgconf~ to be installed 
            ("C-M-$" . jing-languages)))
 #+end_src
 
-*** Provide Spellchecking
+*** Grammar checking
+
+#+begin_src emacs-lisp :tangle "modules/slp-spellcheck.el"
+  (use-package flycheck
+    :ensure t
+    :hook ((text-mode org-mode markdown-mode) . flycheck-mode))
+
+  ;; Custom Vale checker instead of flycheck-vale package
+  (flycheck-define-checker vale
+    "A checker for prose using Vale"
+    :command ("vale" "--output" "line" source)
+    :standard-input nil
+    :error-patterns
+    ((error line-start (file-name) ":" line ":" column ":" (id (one-or-more (not (any ":")))) ":" (message) line-end))
+    :modes (markdown-mode org-mode text-mode))
+
+  (add-to-list 'flycheck-checkers 'vale 'append)
+
+
+#+end_src
+
+*** Provide Spellchecking and grammar checking
 
 #+begin_src emacs-lisp :tangle "modules/slp-spellcheck.el"
   (provide 'slp-spellcheck)
@@ -1310,6 +1334,7 @@ I open the videos of those I follow.
             ("https://noonker.github.io/index.xml" blog)
             ("https://www.schneier.com/feed/atom/" blog security)
             ("https://simon.peytonjones.org/feed.xml" blog research)
+            ("https://johnrakestraw.com/index.xml" blog)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCCbfB3cQtkEAiKfdRQnfQvw" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UC8bSNxb8Oc7b28N2TTrQC1g" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCcoO-8J0EYQHGPFQqwmAzVQ" youtube)
