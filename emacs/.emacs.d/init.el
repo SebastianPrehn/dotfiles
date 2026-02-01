@@ -1,7 +1,19 @@
+(require 'package)
 ;;; Setup package manager archives
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+;(add-to-list 'package-archives
+ ;            '("melpa" . "https://melpa.org/packages/") t)
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+        ("elpa" . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
+
+;; Install use-package if not already installed
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
 (dolist (dir '("modules"))
   (let ((path (locate-user-emacs-file dir)))

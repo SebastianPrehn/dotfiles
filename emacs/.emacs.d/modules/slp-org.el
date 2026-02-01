@@ -105,4 +105,94 @@
        ((org-agenda-span 7)
         (org-agenda-overriding-header "📆 Week Ahead"))))))
 
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (expand-file-name "roam/" org-directory))
+  (org-roam-completion-anywhere t)
+  (org-roam-dailies-directory "daily/")
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ("C-c n j" . org-roam-dailies-capture-today)
+         ("C-c n d" . org-roam-dailies-goto-today)
+         ("C-c n y" . org-roam-dailies-goto-yesterday)
+         ("C-c n t" . org-roam-dailies-goto-tomorrow)
+         ("C-c n g" . org-roam-graph))
+  :bind-keymap
+  ("C-c n d" . org-roam-dailies-map)
+  :config
+  (org-roam-db-autosync-mode) ; Initialize database
+  ;; Daily node templates
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %<%H:%M> %?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d %A>\n\n"))))
+  ;; Node capture templates
+  (setq org-roam-capture-templates
+        '(("d" "default" plain
+           "%?"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+date: %U\n\n")
+           :unnarrowed t)
+          
+          ("p" "project" plain
+           "* Goals\n\n%?\n\n* Tasks\n\n** TODO \n\n* Dates\n\n* Notes\n\n"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+category: project\n#+date: %U\n\n")
+           :unnarrowed t)
+          
+          ("r" "reference/paper" plain
+           "* Source\n\n%^{citekey}p\n\n* Summary\n\n%?\n\n* Key Points\n\n* Notes\n\n* Related\n\n"
+           :target (file+head "references/%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+roam_key: cite:${citekey}\n#+category: reference\n#+date: %U\n\n")
+           :unnarrowed t)
+          
+          ("b" "bibliography note" plain
+           "* Bibliographic Information\n\n%^{citekey}p\n\n* Summary\n\n%?\n\n* Key Arguments\n\n* Methodology\n\n* Conclusions\n\n* Personal Notes\n\n* Related Papers\n\n"
+           :target (file+head "references/%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+roam_key: cite:${citekey}\n#+date: %U\n\n")
+           :unnarrowed t))))
+
+;;; Bibliography and citation management
+(use-package org-ref
+  :ensure t
+  :after org
+  :custom
+  ;; Bibliography files
+  (org-ref-default-bibliography 
+   (list (expand-file-name "references/bibliography.bib" org-directory)))
+  (org-ref-pdf-directory 
+   (expand-file-name "references/pdfs/" org-directory))
+  (org-ref-notes-directory 
+   (expand-file-name "roam/references/" org-directory))
+
+  ;; Use Org Roam for notes
+  (org-ref-notes-function 'org-ref-notes-function-many-files)
+
+  ;; Citation format
+  (org-ref-default-citation-link "cite")
+
+  :config
+  ;; Make org-ref work with Org Roam notes
+  (defun slp/org-ref-notes-function (key)
+    "Open or create an Org Roam note for citation KEY."
+    (let* ((title (org-ref-get-bibtex-key-and-file key))
+           (node (org-roam-node-from-title-or-alias 
+                  (format "@%s" key))))
+      (if node
+          (org-roam-node-visit node)
+        (org-roam-capture-
+         :node (org-roam-node-create :title (format "@%s" key))
+         :templates
+         '(("r" "reference" plain
+            "* Source\n\nCitekey: %^{citekey}\n\n* Summary\n\n%?\n\n* Notes\n\n"
+            :target (file+head "references/${citekey}.org"
+                               "#+title: @${citekey}\n#+roam_key: cite:${citekey}\n#+date: %U\n\n")
+            :unnarrowed t))))))
+  
+  (setq org-ref-notes-function 'slp/org-ref-notes-function))
+
 (provide 'slp-org)

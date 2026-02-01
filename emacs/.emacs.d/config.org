@@ -152,11 +152,23 @@ The ~init.el~ file is responsible for the remainder of the setup: Setup of the p
 Setting up ~package.el~ is straightforward: given that ~package-enable-at-startup~ was set to ~t~ in the /early init file/, we do not need to require it or initialize it here on Arch Linux, but I found that it would not work correctly on =MacOS= unless I used ~package-initialize~.
 We add /MELPA/ as an additional package archive to ELPA.
 
-#+begin_src emacs-lisp :tangle "init.el"
+#+begin_src emacs-lisp :tangle "init.el" :mkdirp yes
+  (require 'package)
   ;;; Setup package manager archives
-  (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/") t)
+  ;(add-to-list 'package-archives
+   ;            '("melpa" . "https://melpa.org/packages/") t)
+  (setq package-archives
+        '(("melpa" . "https://melpa.org/packages/")
+          ("elpa" . "https://elpa.gnu.org/packages/")
+          ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
   (package-initialize)
+
+  (unless package-archive-contents
+    (package-refresh-contents))
+
+  ;; Install use-package if not already installed
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
 #+end_src
 
 ** Load modules
@@ -1016,19 +1028,130 @@ We set it up to use the following commands:
           (org-agenda-overriding-header "📆 Week Ahead"))))))
 #+end_src
 
+*** Org Roam
+
+I use [[https:www.orgroam.com/][Org Roam]] for my note-taking needs.
+
+The idea is to create several nodes with links between them. I will call these connections edges and links interchangeably.
+
+To Org Roam, a node is defined as
+
+#+begin_quote
+    A node is any headline or top level file with an ID.
+#+end_quote
+
+We setup Org Roam to use the following commands:
+- ~C-c n f~ : Find or create a note
+- ~C-c n i~ : Insert a link to another note
+- ~C-c n l~ : Toggle the backlinks buffer (shows connections)
+- ~C-c n c~ : Capture a new note using templates
+- ~C-c n j~ : Jump to today's daily note
+- ~C-c n g~ : View the graph of your notes
+
+#+begin_src emacs-lisp :tangle "modules/slp-org.el"
+  (use-package org-roam
+    :ensure t
+    :custom
+    (org-roam-directory (expand-file-name "roam/" org-directory))
+    (org-roam-completion-anywhere t)
+    (org-roam-dailies-directory "daily/")
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n c" . org-roam-capture)
+           ("C-c n j" . org-roam-dailies-capture-today)
+           ("C-c n d" . org-roam-dailies-goto-today)
+           ("C-c n y" . org-roam-dailies-goto-yesterday)
+           ("C-c n t" . org-roam-dailies-goto-tomorrow)
+           ("C-c n g" . org-roam-graph))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    :config
+    (org-roam-db-autosync-mode) ; Initialize database
+    ;; Daily node templates
+    (setq org-roam-dailies-capture-templates
+          '(("d" "default" entry
+             "* %<%H:%M> %?"
+             :target (file+head "%<%Y-%m-%d>.org"
+                                "#+title: %<%Y-%m-%d %A>\n\n"))))
+    ;; Node capture templates
+    (setq org-roam-capture-templates
+          '(("d" "default" plain
+             "%?"
+             :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("p" "project" plain
+             "* Goals\n\n%?\n\n* Tasks\n\n** TODO \n\n* Dates\n\n* Notes\n\n"
+             :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+category: project\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("r" "reference/paper" plain
+             "* Source\n\n%^{citekey}p\n\n* Summary\n\n%?\n\n* Key Points\n\n* Notes\n\n* Related\n\n"
+             :target (file+head "references/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+roam_key: cite:${citekey}\n#+category: reference\n#+date: %U\n\n")
+             :unnarrowed t)
+            
+            ("b" "bibliography note" plain
+             "* Bibliographic Information\n\n%^{citekey}p\n\n* Summary\n\n%?\n\n* Key Arguments\n\n* Methodology\n\n* Conclusions\n\n* Personal Notes\n\n* Related Papers\n\n"
+             :target (file+head "references/%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n#+roam_key: cite:${citekey}\n#+date: %U\n\n")
+             :unnarrowed t))))
+#+end_src
+
+*** Org-ref
+
+Organizing my bibliography and references through Emacs, more specifically =org-ref=, appeals to me.
+
+#+begin_src emacs-lisp :tangle "modules/slp-org.el"
+  ;;; Bibliography and citation management
+  (use-package org-ref
+    :ensure t
+    :after org
+    :custom
+    ;; Bibliography files
+    (org-ref-default-bibliography 
+     (list (expand-file-name "references/bibliography.bib" org-directory)))
+    (org-ref-pdf-directory 
+     (expand-file-name "references/pdfs/" org-directory))
+    (org-ref-notes-directory 
+     (expand-file-name "roam/references/" org-directory))
+
+    ;; Use Org Roam for notes
+    (org-ref-notes-function 'org-ref-notes-function-many-files)
+
+    ;; Citation format
+    (org-ref-default-citation-link "cite")
+
+    :config
+    ;; Make org-ref work with Org Roam notes
+    (defun slp/org-ref-notes-function (key)
+      "Open or create an Org Roam note for citation KEY."
+      (let* ((title (org-ref-get-bibtex-key-and-file key))
+             (node (org-roam-node-from-title-or-alias 
+                    (format "@%s" key))))
+        (if node
+            (org-roam-node-visit node)
+          (org-roam-capture-
+           :node (org-roam-node-create :title (format "@%s" key))
+           :templates
+           '(("r" "reference" plain
+              "* Source\n\nCitekey: %^{citekey}\n\n* Summary\n\n%?\n\n* Notes\n\n"
+              :target (file+head "references/${citekey}.org"
+                                 "#+title: @${citekey}\n#+roam_key: cite:${citekey}\n#+date: %U\n\n")
+              :unnarrowed t))))))
+    
+    (setq org-ref-notes-function 'slp/org-ref-notes-function))
+#+end_src
+
 
 *** Provide Org
 
 #+begin_src emacs-lisp :tangle "modules/slp-org.el"
   (provide 'slp-org)
 #+end_src
-
-
-** Calendar
-
-I use [[https://github.com/kiwanami/emacs-calfw][Calfw]] to manage my calendar in Emacs.
-
-
 
 ** Dired
 
