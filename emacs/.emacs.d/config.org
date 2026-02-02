@@ -1417,6 +1417,37 @@ It is widely used in free software and open source development spaces, and so I 
               :client-certificate t))
 #+end_src
 
+*** mu4e
+
+#+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
+  (load "~/.emacs.d/private.el" t)
+  
+  (use-package mu4e
+    :config
+    (setq user-full-name "Sebastian Larsen Prehn"
+          user-mail-address "slp@sebastianprehn.dk"
+          mu4e-user-mail-address-list '(list (or my-email-address "user@example.org")
+                                        "slp@sebastianprehn.dk")
+          mu4e-change-filenames-when-moving t
+          mu4e-get-mail-command "mbsync -a"
+          mu4e-attachment-dir "~/Downloads"
+          mu4e-drafts-folder "/Drafts"
+          mu4e-sent-folder "/Sent"
+          mu4e-refile-folder "/Archive"
+          mu4e-trash-folder "/Trash"
+          mu4e-maildir-shortcuts '((:maildir "/Inbox" :key ?i)
+                                   (:maildir "/Sent" :key ?s)
+                                   (:maildir "/Trash" :key ?t)
+                                   (:maildir "/Drafts" :key ?d)
+                                   (:maildir "/Junk" :key ?j)
+                                   (:maildir "/Archive" :key ?a))
+          smtpmail-smtp-user (or my-email-address "user@example.org")
+          smtpmail-smtp-server "smtp.mailbox.org"
+          smtpmail-smtp-service 465
+          smtpmail-stream-type 'ssl
+          send-mail-function 'smtpmail-send-it))
+#+end_src
+
 *** Provide chatting
 
 #+begin_src emacs-lisp :tangle "modules/slp-chatting.el"

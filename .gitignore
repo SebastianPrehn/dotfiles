@@ -5,7 +5,7 @@
 .LSOverride
 
 ### Emacs ###
-slp-identity.el
+private.el
 savehist
 auto-save-list
 eln-cache/
