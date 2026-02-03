@@ -229,7 +229,12 @@ Window decorations are disabled, and dialog boxes are handled within Emacs rathe
   (setq column-number-mode 1)
   (setq use-dialog-box nil)
   (setq frame-resize-pixelwise t)
-  (setq default-frame-alist '((undecorated . t)))
+  (setq default-frame-alist
+      (if (eq system-type 'darwin)
+          '((ns-transparent-titlebar . t)      ; Make titlebar blend with buffer
+            (ns-appearance . dark)              ; Use dark titlebar (or 'light)
+            (alpha-background . 95))            ; Slight transparency (0-100)
+        '((undecorated . t))))                  ; Remove decorations on Linux
 #+end_src
 
 *** Make Emacs use the $PATH
