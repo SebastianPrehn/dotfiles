@@ -989,7 +989,7 @@ We set it up to use the following commands:
 
         ("j" "Journal Entry"
          entry
-         (file+datetree ,slp/journal-file)
+         (file+olp+datetree ,slp/journal-file)
          "* %<%H:%M> %^{Title}\n%?\n"
          :empty-lines 1)))
 
@@ -1417,9 +1417,16 @@ It is widely used in free software and open source development spaces, and so I 
               :client-certificate t))
 #+end_src
 
-*** mu4e
+
+*** Provide chatting
 
 #+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
+  (provide 'slp-chatting)
+#+end_src
+
+** mu4e
+
+#+begin_src emacs-lisp :tangle "modules/slp-mail.el" :mkdirp yes
   (load "~/.emacs.d/private.el" t)
   
   (use-package mu4e
@@ -1448,10 +1455,10 @@ It is widely used in free software and open source development spaces, and so I 
           send-mail-function 'smtpmail-send-it))
 #+end_src
 
-*** Provide chatting
+*** Provide mail
 
-#+begin_src emacs-lisp :tangle "modules/slp-chatting.el"
-  (provide 'slp-chatting)
+#+begin_src emacs-lisp :tangle "modules/slp-mail.el"
+  (provide 'slp-mail)
 #+end_src
 
 ** Elfeed
@@ -1489,6 +1496,7 @@ I open the videos of those I follow.
             ("https://www.schneier.com/feed/atom/" blog security)
             ("https://simon.peytonjones.org/feed.xml" blog research)
             ("https://johnrakestraw.com/index.xml" blog)
+            ("https://weeklyrust.substack.com/feed" blog rust)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCCbfB3cQtkEAiKfdRQnfQvw" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UC8bSNxb8Oc7b28N2TTrQC1g" youtube)
             ("https://www.youtube.com/feeds/videos.xml?channel_id=UCcoO-8J0EYQHGPFQqwmAzVQ" youtube)
