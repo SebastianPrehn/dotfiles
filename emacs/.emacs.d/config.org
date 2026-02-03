@@ -194,6 +194,7 @@ Once the =modules= directory is available, the desired modules are listed explic
   (require 'slp-spellcheck)
   (require 'slp-vc)
   (require 'slp-chatting)
+  (require 'slp-mail)
   (require 'slp-elfeed)
 #+end_src
 
@@ -970,7 +971,12 @@ We set it up to use the following commands:
       (expand-file-name "journal.org" org-directory)
       "Path to journal org file.")
 
-    (setq org-agenda-files (list slp/deep-work-file))
+    (defvar slp/contacts-file
+      (expand-file-name "contacts.org" org-directory)
+      "Path to contacts org file.")
+
+    (setq org-agenda-files (list slp/deep-work-file
+                                 slp/contacts-file))
 
     (setq org-capture-templates
       `(("w" "Work Task"
@@ -1433,12 +1439,12 @@ It is widely used in free software and open source development spaces, and so I 
 
 #+begin_src emacs-lisp :tangle "modules/slp-mail.el" :mkdirp yes
   (load "~/.emacs.d/private.el" t)
-  
+
   (use-package mu4e
     :config
     (setq user-full-name "Sebastian Larsen Prehn"
           user-mail-address "slp@sebastianprehn.dk"
-          mu4e-user-mail-address-list '(list (or my-email-address "user@example.org")
+          mu4e-user-mail-address-list (list (or my-email-address "user@example.org")
                                         "slp@sebastianprehn.dk")
           mu4e-change-filenames-when-moving t
           mu4e-get-mail-command "mbsync -a"
@@ -1457,7 +1463,43 @@ It is widely used in free software and open source development spaces, and so I 
           smtpmail-smtp-server "smtp.mailbox.org"
           smtpmail-smtp-service 465
           smtpmail-stream-type 'ssl
-          send-mail-function 'smtpmail-send-it))
+          send-mail-function 'smtpmail-send-it)
+          ;; Auto-update mail every 5 minutes
+          mu4e-update-interval (* 5 60))
+#+end_src
+
+**** Org mode integration
+
+#+begin_src emacs-lisp :tangle "modules/slp-mail.el"
+  ;; Org-mode integration
+  (require 'org-mu4e nil t)
+#+end_src
+
+**** Notify on system
+
+#+begin_src emacs-lisp :tangle "modules/slp-mail.el"
+  ;; mu4e-alert for notifications
+  (use-package mu4e-alert
+    :ensure t
+    :after mu4e
+    :config
+    (mu4e-alert-set-default-style 'libnotify)  ; or 'notifier on macOS
+    (mu4e-alert-enable-mode-line-display)
+    (mu4e-alert-enable-notifications))
+#+end_src
+
+**** Org contacts
+
+#+begin_src emacs-lisp :tangle "modules/slp-mail.el"
+  (use-package org-contacts
+    :ensure t
+    :after (mu4e org)
+    :custom
+    (org-contacts-files (list slp/contacts-file))
+    :config
+    ;; Auto-complete from contacts when composing
+    (add-to-list 'mu4e-headers-actions
+                 '("add to contacts" . mu4e-action-add-org-contact) t))
 #+end_src
 
 *** Provide mail
