@@ -1,0 +1,99 @@
+org-mode
+
+;; Source blocks with prompts
+(tangle "#+begin_src emacs-lisp :tangle \"${1:filename}\""  n> $0 n "#+end_src")
+(tangledir "#+begin_src emacs-lisp :tangle \"${1:filename}\" :mkdirp yes" n> $0 n "#+end_src")
+(src "#+begin_src " (p "Language: " lang) n> r> n "#+end_src")
+
+
+;; Babel results/exports
+(results "#+RESULTS:" n "#+begin_example" n> r> n "#+end_example")
+(export "#+begin_export " (p "Format: " format) n> r> n "#+end_export")
+
+
+;; Common blocks
+(quote "#+begin_quote" n> r> n "#+end_quote")
+(comment "#+begin_comment" n> r> n "#+end_comment")
+
+
+;; Properties and metadata
+(prop ":PROPERTIES:" n> ":" (p "Property: " prop) ": " (p "Value: " val) n> ":END:")
+(drawer ":" (p "Drawer name: " name) ":" n> r> n ":END:")
+
+
+;; Timestamps and scheduling
+(deadline "DEADLINE: " (p "Date: " date))
+(scheduled "SCHEDULED: " (p "Date: " date))
+(timestamp "[" (format-time-string "%Y-%m-%d %a %H:%M") "]")
+
+
+;; Links
+(link "[[" (p "URL: " url) "][" (p "Description: " desc) "]]")
+(img "#+attr_html: :width " (p "Width: " width "800px") n "[[" (p "Image path: " path) "]]")
+
+
+;; Tables
+(table "| " (p "Column 1: ") " | " (p "Column 2: ") " |" n> "|-")
+
+
+rust-mode
+
+;; Common Rust patterns
+(fn "fn " (p "name: " name) "(" (p "args: " args) ") -> " (p "return: " ret "()") " {" n> r> n "}")
+(test "#[test]" n "fn " (p "test_name: " name) "() {" n> r> n "}")
+(derive "#[derive(" (p "traits: " traits "Debug") ")]")
+(struct "struct " (p "Name: " name) " {" n> r> n "}")
+(enum "enum " (p "Name: " name) " {" n> r> n "}")
+(impl "impl " (p "Type: " type) " {" n> r> n "}")
+(impltrait "impl " (p "Trait: " trait) " for " (p "Type: " type) " {" n> r> n "}")
+(match "match " (p "expr: " expr) " {" n> r> n "}")
+(iflet "if let " (p "pattern: " pat) " = " (p "expr: " expr) " {" n> r> n "}")
+(macro "macro_rules! " (p "name: " name) " {" n> "(" (p "matcher: " match) ") => {" n> r> n> "};" n "}")
+(mod "mod " (p "name: " name) ";")
+(use "use " (p "path: " path) ";")
+(println "println!(\"" (p "format: " fmt) "\");")
+(vec "vec![" r "]")
+(ok "Ok(" r ")")
+(err "Err(" r ")")
+(some "Some(" r ")")
+(none "None")
+(box "Box::new(" r ")")
+(rc "Rc::new(" r ")")
+(arc "Arc::new(" r ")")
+
+
+latex-mode
+
+;; Document structure
+(doc "\\documentclass{" (p "class: " class "article") "}" n
+     "\\usepackage{" (p "packages: " pkgs) "}" n n
+     "\\title{" (p "title: ") "}" n
+     "\\author{" (p "author: ") "}" n
+     "\\date{" (p "date: " date "\\today") "}" n n
+     "\\begin{document}" n
+     "\\maketitle" n n
+     r n n
+     "\\end{document}")
+
+
+;; Formatting
+(bold "\\textbf{" r "}")
+(italic "\\textit{" r "}")
+(emph "\\emph{" r "}")
+(tt "\\texttt{" r "}")
+(section "\\section{" (p "title: ") "}" n> r>)
+(subsection "\\subsection{" (p "title: ") "}" n> r>)
+(subsubsection "\\subsubsection{" (p "title: ") "}" n> r>)
+
+
+;; References
+(ref "\\ref{" (p "label: ") "}")
+(cite "\\cite{" (p "key: ") "}")
+(label "\\label{" (p "label: ") "}")
+
+
+;; Math
+(frac "\\frac{" (p "numerator: ") "}{" (p "denominator: ") "}")
+(sqrt "\\sqrt{" r "}")
+(sum "\\sum_{" (p "lower: ") "}^{" (p "upper: ") "}")
+(int "\\int_{" (p "lower: ") "}^{" (p "upper: ") "}")
