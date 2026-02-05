@@ -263,7 +263,7 @@ Since this configuration targets contemporary environments exclusively, a small 
 
 #+begin_src emacs-lisp :tangle "init.el"
   (delete-selection-mode 1) ; Delete selection when typing
-  (global-auto-revert-mode 1) ; Auto update buffer when file changes outside of Emacs (vc etc.)
+  (global-auto-revert-mode t) ; Auto update buffer when file changes outside of Emacs (vc etc.)
   (setq vc-follow-symlinks t) ; Follow symlinks without prompting
   (setq-default tab-width 4) ; Reasonable default tab width most languages will override
   (setq yes-or-no-p #'y-or-n-p) ; Use y/n instead of yes/no
@@ -1588,7 +1588,7 @@ It is widely used in free software and open source development spaces, and so I 
           smtpmail-stream-type 'ssl
           send-mail-function 'smtpmail-send-it)
           ;; Auto-update mail every 5 minutes
-          mu4e-update-interval (* 5 60))
+          mu4e-update-interval 300)
 #+end_src
 
 **** Org mode integration
